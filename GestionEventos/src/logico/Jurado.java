@@ -4,11 +4,21 @@ public class Jurado extends Persona {
 	
 	private String area;
 	private boolean seleccionado;
+	private String idJurado;
 
 	public Jurado(String id, String cedula, String nombre, String apellidos, String telefono, String area) {
-		super(id, cedula, nombre, apellidos, telefono);
+		super(cedula, nombre, apellidos, telefono);
 		this.area = area;
 		this.seleccionado = false;
+		this.idJurado = id;
+	}
+
+	public void setIdJurado(String idJurado) {
+		this.idJurado = idJurado;
+	}
+
+	public String getIdJurado() {
+		return idJurado;
 	}
 
 	public String getArea() {

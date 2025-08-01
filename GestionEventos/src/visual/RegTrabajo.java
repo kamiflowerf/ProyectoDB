@@ -31,7 +31,7 @@ public class RegTrabajo extends JDialog {
     }
 
     public RegTrabajo() {
-        setTitle("Registrar Trabajo Científico");
+        setTitle("Registrar Trabajo Cientï¿½fico");
         
         Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
@@ -72,7 +72,7 @@ public class RegTrabajo extends JDialog {
 
         txtId = new JTextField();
         txtId.setEditable(false);
-        txtId.setText("T-"+GestionEvento.getInstance().codTrabajos);
+        txtId.setText("T-"+GeneradorCodigos.generarCodigoUnico(5));
         txtId.setBounds(104, 30, 116, 22);
         panel_1.add(txtId);
 
@@ -87,8 +87,8 @@ public class RegTrabajo extends JDialog {
         txtNombre.setBounds(104, 72, 230, 22);
         panel_1.add(txtNombre);
 
-        // Área
-        JLabel lblArea = new JLabel("Área:");
+        // ï¿½rea
+        JLabel lblArea = new JLabel("ï¿½rea:");
         lblArea.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblArea.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblArea.setBounds(23, 116, 56, 16);
@@ -110,8 +110,8 @@ public class RegTrabajo extends JDialog {
         panel.add(panelAutor);
         panelAutor.setLayout(null);
 
-        // Cédula Autor
-        JLabel lblCedulaAutor = new JLabel("Cédula:");
+        // Cï¿½dula Autor
+        JLabel lblCedulaAutor = new JLabel("Cï¿½dula:");
         lblCedulaAutor.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblCedulaAutor.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblCedulaAutor.setBounds(27, 39, 70, 16);
@@ -145,8 +145,8 @@ public class RegTrabajo extends JDialog {
         txtApellidosAutor.setBounds(107, 153, 200, 22);
         panelAutor.add(txtApellidosAutor);
 
-        // Teléfono
-        JLabel lblTelefono = new JLabel("Teléfono:");
+        // Telï¿½fono
+        JLabel lblTelefono = new JLabel("TelÃ©fono:");
         lblTelefono.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblTelefono.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblTelefono.setBounds(345, 96, 70, 16);
@@ -212,7 +212,7 @@ public class RegTrabajo extends JDialog {
         					JOptionPane.showMessageDialog(null, "Debe llenar todos los datos del autor.", 
                                     "Error", JOptionPane.ERROR_MESSAGE);
         				}else {
-        					Participante participante = new Participante(("P-"+GestionEvento.getInstance().codPersona), txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
+        					Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
         					TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), cmbArea.getSelectedItem().toString(), participante);
         					GestionEvento.getInstance().insertarPersonas(participante);
         					GestionEvento.getInstance().insertarTrabajo(trabajo);
@@ -239,7 +239,7 @@ public class RegTrabajo extends JDialog {
     }
 
     private void clean() {
-        txtId.setText("T-" + GestionEvento.getInstance().codTrabajos);
+        txtId.setText("T-" + GeneradorCodigos.generarCodigoUnico(5));
         txtNombre.setText("");
         cmbArea.setSelectedIndex(0);
         txtCedulaAutor.setText("");

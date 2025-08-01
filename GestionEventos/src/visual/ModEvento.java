@@ -46,8 +46,8 @@ import java.awt.Font;
 public class ModEvento extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	private String[] headersComision = {"Código", "Nombre", "Area"};
-	private String[] headersRecurso = {"Código", "Nombre", "Tipo"};
+	private String[] headersComision = {"Cï¿½digo", "Nombre", "Area"};
+	private String[] headersRecurso = {"Cï¿½digo", "Nombre", "Tipo"};
 	private static DefaultTableModel modeloComision;
 	private static Object[] rowComision;
 	private static DefaultTableModel modeloRecurso;
@@ -215,7 +215,7 @@ public class ModEvento extends JDialog {
 				 public void actionPerformed(ActionEvent e) {
 					 if(existeJurados(selectedComision)) {
 							JOptionPane.showMessageDialog(null, 
-									"Esta comisión tiene jurados en común con otra ya seleccionada.",
+									"Esta comisiï¿½n tiene jurados en comï¿½n con otra ya seleccionada.",
 									"Error", JOptionPane.ERROR_MESSAGE);
 						}else {
 							selectedComision.setSelected(true);
@@ -411,7 +411,7 @@ public class ModEvento extends JDialog {
 							}
 							if(cantRecurSel == 0 || cantComiSel == 0) {
 								JOptionPane.showMessageDialog(null, 
-										"Debe seleccionar al menos una comisión y un recurso.",
+										"Debe seleccionar al menos una comisiï¿½n y un recurso.",
 										"Error", JOptionPane.ERROR_MESSAGE);
 							}else {
 								if(tieneLocal) {
@@ -433,7 +433,7 @@ public class ModEvento extends JDialog {
 										}
 									}
 									JOptionPane.showMessageDialog(null, 
-											"Modificación exitosa.",
+											"Modificaciï¿½n exitosa.",
 											"Aviso", JOptionPane.WARNING_MESSAGE);
 									dispose();
 								}else {
@@ -539,7 +539,7 @@ public class ModEvento extends JDialog {
 			if(comision.getSelected()) {
 				for (Jurado jurado : comision.getJurado()) {
 					for (Jurado jurado2 : obj.getJurado()) {
-						if(jurado2.getId().equals(jurado.getId())) {
+						if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
 							return true;
 						}
 					}

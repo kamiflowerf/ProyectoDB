@@ -14,6 +14,7 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
+import logico.GeneradorCodigos;
 import logico.GestionEvento;
 import logico.Jurado;
 import logico.Participante;
@@ -192,19 +193,19 @@ public class RegPersona extends JDialog {
                                     "Error", JOptionPane.ERROR_MESSAGE);
 						}else {
 							if(rdPart.isSelected()) {
-								Participante participante = new Participante(("P-"+GestionEvento.getInstance().codPersona), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString());
+								Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString());
 								GestionEvento.getInstance().insertarPersonas(participante);
-								JOptionPane.showMessageDialog(null, "Operación Exitosa.", 
+								JOptionPane.showMessageDialog(null, "OperaciÃ³n Exitosa.",
 	                                    "Aviso", JOptionPane.WARNING_MESSAGE);
 								clean();
 							}else {
 								if(cmbArea.getSelectedIndex() == 0) {
-									JOptionPane.showMessageDialog(null, "Debe seleccionar un área.", 
+									JOptionPane.showMessageDialog(null, "Debe seleccionar un Ã¡rea.",
 		                                    "Error", JOptionPane.ERROR_MESSAGE);
 								}else {
-									Jurado jurado = new Jurado(("P-"+GestionEvento.getInstance().codPersona), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString(), cmbArea.getSelectedItem().toString());
+									Jurado jurado = new Jurado("J-" +GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString(), cmbArea.getSelectedItem().toString());
 									GestionEvento.getInstance().insertarPersonas(jurado);
-									JOptionPane.showMessageDialog(null, "Operación Exitosa.", 
+									JOptionPane.showMessageDialog(null, "OperaciÃ³n Exitosa.",
 		                                    "Aviso", JOptionPane.WARNING_MESSAGE);
 									clean();
 								}

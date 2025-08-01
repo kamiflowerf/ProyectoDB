@@ -2,6 +2,7 @@ package logico;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class GestionEvento implements Serializable {
 	
@@ -19,12 +20,6 @@ public class GestionEvento implements Serializable {
 	private static User currentUser;
 	
 	public static GestionEvento gestion = null;
-	
-	public static int codPersona = 1;
-	public static int codTrabajos = 1;
-	public static int codComision = 1;
-	public static int codEvento = 1;
-	public static int codRecursos = 1;
 	
 	public GestionEvento() {
 		super();
@@ -88,7 +83,6 @@ public class GestionEvento implements Serializable {
 
 	public void insertarPersonas(Persona obj) {
 		misPersonas.add(obj);
-		codPersona++;
 	}
 	
 	public void eliminarPersona(Persona obj) {
@@ -105,7 +99,6 @@ public class GestionEvento implements Serializable {
 	
 	public void insertarTrabajo(TrabajoCientifico obj) {
 		misTrabajosCientificos.add(obj);
-		codTrabajos++;
 	}
 	
 	public void eliminarTrabajo(TrabajoCientifico obj) {
@@ -122,7 +115,6 @@ public class GestionEvento implements Serializable {
 	
 	public void insertarComision(Comision obj) {
 		misComisiones.add(obj);
-		codComision++;
 	}
 	
 	public void eliminarComision(Comision obj) {
@@ -139,7 +131,6 @@ public class GestionEvento implements Serializable {
 	
 	public void insertarEvento(Evento obj) {
 		misEventos.add(obj);
-		codEvento++;
 	}
 	
 	public void eliminarEvento(Evento obj) {
@@ -156,7 +147,6 @@ public class GestionEvento implements Serializable {
 	
 	public void insertarRecurso(Recurso obj) {
 		misRecursos.add(obj);
-		codRecursos++;
 	}
 	
 	public void eliminarRecurso(Recurso obj) {

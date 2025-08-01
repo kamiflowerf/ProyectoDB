@@ -38,7 +38,7 @@ public class ModTrabajo extends JDialog {
             return;
         }
 
-        setTitle("Modificar Trabajo Científico");
+        setTitle("Modificar Trabajo Cientï¿½fico");
         
         Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
@@ -93,16 +93,16 @@ public class ModTrabajo extends JDialog {
         txtNombre.setBounds(104, 72, 230, 22);
         panel_1.add(txtNombre);
 
-        // Área
-        JLabel lblArea = new JLabel("Área:");
+        // ï¿½rea
+        JLabel lblArea = new JLabel("ï¿½rea:");
         lblArea.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblArea.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblArea.setBounds(23, 116, 56, 16);
         panel_1.add(lblArea);
 
         cmbArea = new JComboBox();
-        cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Tecnología en informática", 
-            "Ciencias de la salud", "Ciencias Sociales", "Investigación y Desarrollo"}));
+        cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Tecnologï¿½a en informï¿½tica", 
+            "Ciencias de la salud", "Ciencias Sociales", "Investigaciï¿½n y Desarrollo"}));
         cmbArea.setSelectedItem(trabajo.getArea());
         cmbArea.setEnabled(false);
         cmbArea.setBounds(104, 115, 179, 20);
@@ -122,8 +122,8 @@ public class ModTrabajo extends JDialog {
         // Datos del autor
         Participante autor = trabajo.getAutor();
 
-        // Cédula Autor
-        JLabel lblCedulaAutor = new JLabel("Cédula:");
+        // Cï¿½dula Autor
+        JLabel lblCedulaAutor = new JLabel("Cï¿½dula:");
         lblCedulaAutor.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblCedulaAutor.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblCedulaAutor.setBounds(27, 39, 70, 16);
@@ -157,8 +157,8 @@ public class ModTrabajo extends JDialog {
         txtApellidosAutor.setBounds(107, 153, 200, 22);
         panelAutor.add(txtApellidosAutor);
 
-        // Teléfono
-        JLabel lblTelefono = new JLabel("Teléfono:");
+        // Telï¿½fono
+        JLabel lblTelefono = new JLabel("Telï¿½fono:");
         lblTelefono.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblTelefono.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblTelefono.setBounds(345, 96, 70, 16);
@@ -216,8 +216,8 @@ public class ModTrabajo extends JDialog {
         				trabajo.setNombre(txtNombre.getText().toString());
         				obj = (Participante)GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText().toString());
         				trabajo.setAutor((Participante) obj);
-        				JOptionPane.showMessageDialog(null, "Modificación completada.", 
-                                "Modificación", JOptionPane.WARNING_MESSAGE);
+        				JOptionPane.showMessageDialog(null, "Modificaciï¿½n completada.", 
+                                "Modificaciï¿½n", JOptionPane.WARNING_MESSAGE);
         				dispose();
         			}else {
         				JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
@@ -225,11 +225,11 @@ public class ModTrabajo extends JDialog {
         			}
         		}else {
         			trabajo.setNombre(txtNombre.getText().toString());
-        			Participante participante = new Participante(("P-"+GestionEvento.getInstance().codPersona),txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
+        			Participante participante = new Participante("P"+GeneradorCodigos.generarCodigoUnico(5),txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
         			GestionEvento.getInstance().insertarPersonas(participante);
     				trabajo.setAutor(participante);
-    				JOptionPane.showMessageDialog(null, "Modificación completada.", 
-                            "Modificación", JOptionPane.WARNING_MESSAGE);
+    				JOptionPane.showMessageDialog(null, "Modificaciï¿½n completada.", 
+                            "Modificaciï¿½n", JOptionPane.WARNING_MESSAGE);
     				dispose();
         		}
         	}

@@ -7,33 +7,27 @@ public abstract class Persona implements Serializable {
 	/**
 	 * 
 	 */
+
+
 	private static final long serialVersionUID = 1L;
-	protected String id;
-	protected String cedula;
+	protected String dni;
 	protected String nombre;
 	protected String apellidos;
 	protected String telefono;
 	
-	public Persona(String id, String cedula, String nombre, String apellidos, String telefono) {
+	public Persona( String cedula, String nombre, String apellidos, String telefono) {
 		super();
-		this.id = id;
-		this.cedula = cedula;
+		this.dni = cedula;
 		this.nombre = nombre;
 		this.apellidos = apellidos;
 		this.telefono = telefono;
 	}
-	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+
 	public String getCedula() {
-		return cedula;
+		return dni;
 	}
 	public void setCedula(String cedula) {
-		this.cedula = cedula;
+		this.dni = cedula;
 	}
 	public String getNombre() {
 		return nombre;

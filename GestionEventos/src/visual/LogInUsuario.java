@@ -51,11 +51,11 @@ public class LogInUsuario extends JFrame {
 					gestionRead = new ObjectInputStream(gestionIn);
 					GestionEvento temp = (GestionEvento) gestionRead.readObject();
 					GestionEvento.setGestion(temp);
-					GestionEvento.getInstance().codPersona = (GestionEvento.getInstance().getMisPersonas().size()+1);
-					GestionEvento.getInstance().codTrabajos = (GestionEvento.getInstance().getMisTrabajosCientificos().size()+1);
-					GestionEvento.getInstance().codComision = (GestionEvento.getInstance().getMisComisiones().size()+1);
-					GestionEvento.getInstance().codEvento = (GestionEvento.getInstance().getMisEventos().size()+1);
-					GestionEvento.getInstance().codRecursos = (GestionEvento.getInstance().getMisRecursos().size()+1);
+					//GestionEvento.getInstance().codPersona = (GestionEvento.getInstance().getMisPersonas().size()+1);
+					//GestionEvento.getInstance().codTrabajos = (GestionEvento.getInstance().getMisTrabajosCientificos().size()+1);
+					//GestionEvento.getInstance().codComision = (GestionEvento.getInstance().getMisComisiones().size()+1);
+					//GestionEvento.getInstance().codEvento = (GestionEvento.getInstance().getMisEventos().size()+1);
+					//GestionEvento.getInstance().codRecursos = (GestionEvento.getInstance().getMisRecursos().size()+1);
 					gestionRead.close();
 					gestionIn.close();
 				}catch(FileNotFoundException e){

@@ -16,13 +16,7 @@ import java.awt.Component;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import logico.Comision;
-import logico.GestionEvento;
-import logico.Jurado;
-import logico.Participante;
-import logico.Persona;
-import logico.Recurso;
-import logico.TrabajoCientifico;
+import logico.*;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -80,7 +74,7 @@ public class RegComision extends JDialog {
 	    try {
 	        this.comisionAModificar = comision;
 	        
-	        setTitle("Modificar Comisión");
+	        setTitle("Modificar Comisiï¿½n");
 	        
 	        txtCodigo.setText(comision.getCodComision());
 	        txtNombre.setText(comision.getNombre());
@@ -130,7 +124,7 @@ public class RegComision extends JDialog {
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        JOptionPane.showMessageDialog(null, 
-	            "Error al cargar los datos de la comisión",
+	            "Error al cargar los datos de la comisiï¿½n",
 	            "Error", 
 	            JOptionPane.ERROR_MESSAGE);
 	    }
@@ -201,7 +195,7 @@ public class RegComision extends JDialog {
 			
 			txtCodigo = new JTextField();
 			txtCodigo.setEditable(false);
-			txtCodigo.setText("C-"+GestionEvento.getInstance().codComision);
+			txtCodigo.setText("C-"+ GeneradorCodigos.generarCodigoUnico(5));
 			txtCodigo.setBounds(67, 28, 86, 20);
 			panel_1.add(txtCodigo);
 			txtCodigo.setColumns(10);
@@ -248,7 +242,7 @@ public class RegComision extends JDialog {
 				}
 			});
 			modeloNoSelectJurado = new DefaultTableModel();
-			String [] identificadores2 = {"Cédula", "Apellido","Area"};
+			String [] identificadores2 = {"Cï¿½dula", "Apellido","Area"};
 			modeloNoSelectJurado.setColumnIdentifiers(identificadores2);
 			table.setModel(modeloNoSelectJurado);
 			scrollPane.setViewportView(table);
@@ -278,7 +272,7 @@ public class RegComision extends JDialog {
 				}
 			});
 			modeloSelectJurado = new DefaultTableModel(); 
-			String [] identificadores3 = {"Cédula", "Apellido","Area"};
+			String [] identificadores3 = {"Cï¿½dula", "Apellido","Area"};
 			table_2.setModel(modeloSelectJurado); 
 			scrollPane_2.setViewportView(table_2);
 			modeloSelectJurado.setColumnIdentifiers(identificadores3);
@@ -292,7 +286,7 @@ public class RegComision extends JDialog {
 			        if(selectedRow >= 0) {
 			        	
 			        	if(cbxArea.getSelectedItem().toString().equalsIgnoreCase("<Seleccione>")) {
-			        		JOptionPane.showMessageDialog(null,"Debe elegir un área.", "Error", JOptionPane.ERROR_MESSAGE);
+			        		JOptionPane.showMessageDialog(null,"Debe elegir un ï¿½rea.", "Error", JOptionPane.ERROR_MESSAGE);
 			        	}else if(modeloNoSelectJurado.getValueAt(selectedRow, 2).toString().equalsIgnoreCase(cbxArea.getSelectedItem().toString())) {
 			                Object[] rowData = new Object[3];
 			                for(int i = 0; i < 3; i++) {
@@ -318,7 +312,7 @@ public class RegComision extends JDialog {
 			                }
 			            } else {
 			                JOptionPane.showMessageDialog(null, 
-			                    "El área del jurado debe coincidir con el área de la comisión",
+			                    "El ï¿½rea del jurado debe coincidir con el ï¿½rea de la comisiï¿½n",
 			                    "Error", JOptionPane.ERROR_MESSAGE);
 			            }
 			        }
@@ -397,7 +391,7 @@ public class RegComision extends JDialog {
 				}
 			});
 			modeloNoSelectTrabajo = new DefaultTableModel(); 
-			String[] identificadoresTrabajos = {"Código","Título", "Area"};
+			String[] identificadoresTrabajos = {"Cï¿½digo","Tï¿½tulo", "Area"};
 			table_1.setModel(modeloNoSelectTrabajo); 
 			scrollPane_1.setViewportView(table_1);
 			modeloNoSelectTrabajo.setColumnIdentifiers(identificadoresTrabajos); 
@@ -411,7 +405,7 @@ public class RegComision extends JDialog {
 			        if(selectedRow >= 0) {
 			            
 			        	if(cbxArea.getSelectedItem().toString().equalsIgnoreCase("<Seleccione>")) {
-			        		JOptionPane.showMessageDialog(null,"Debe elegir un área.", "Error", JOptionPane.ERROR_MESSAGE);
+			        		JOptionPane.showMessageDialog(null,"Debe elegir un ï¿½rea.", "Error", JOptionPane.ERROR_MESSAGE);
 			        	}else if(modeloNoSelectTrabajo.getValueAt(selectedRow, 2).toString().equalsIgnoreCase(cbxArea.getSelectedItem().toString())) {
 			        		Object[] rowData = new Object[3];
 				            for(int i = 0; i < 3; i++) {
@@ -434,7 +428,7 @@ public class RegComision extends JDialog {
 				            }
 			        	}else {
 			                JOptionPane.showMessageDialog(null, 
-				                    "El área del trabajo debe coincidir con el área de la comisión",
+				                    "El ï¿½rea del trabajo debe coincidir con el ï¿½rea de la comisiï¿½n",
 				                    "Error", JOptionPane.ERROR_MESSAGE);
 				        }
 			        }
@@ -549,10 +543,10 @@ public class RegComision extends JDialog {
 
 				            if(comisionAModificar == null) {
 				                GestionEvento.getInstance().insertarComision(comision);
-				                JOptionPane.showMessageDialog(null, "Comisión registrada con éxito");
+				                JOptionPane.showMessageDialog(null, "Comisiï¿½n registrada con ï¿½xito");
 				                clean();
 				            } else {
-				                JOptionPane.showMessageDialog(null, "Comisión modificada con éxito");
+				                JOptionPane.showMessageDialog(null, "Comisiï¿½n modificada con ï¿½xito");
 				                dispose();
 				            }
 					        } else {
@@ -561,7 +555,7 @@ public class RegComision extends JDialog {
 					            } else if(modeloSelectJurado.getRowCount() == 0) {
 					                JOptionPane.showMessageDialog(null, "Debe ingresar al menos un jurado.");
 					            } else if(modeloSelecTrabajo.getRowCount() == 0) {
-					                JOptionPane.showMessageDialog(null, "Debe ingresar al menos un trabajo científico.");
+					                JOptionPane.showMessageDialog(null, "Debe ingresar al menos un trabajo cientï¿½fico.");
 					            }
 					        }
 						
@@ -590,7 +584,7 @@ public class RegComision extends JDialog {
 	}
 	
 	private void clean() {
-	    txtCodigo.setText("C-"+GestionEvento.getInstance().codComision);
+	    txtCodigo.setText("C-"+GeneradorCodigos.generarCodigoUnico(5));
 	    txtNombre.setText("");
 	    cbxArea.setSelectedIndex(0);
 	    cbxArea.setEnabled(true);

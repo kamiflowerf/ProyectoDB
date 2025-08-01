@@ -134,7 +134,7 @@ public class RegRecurso extends JDialog {
         
         txt_Id = new JTextField();
         txt_Id.setEditable(false);
-        txt_Id.setText("R-"+GestionEvento.getInstance().codRecursos);
+        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(7));
         txt_Id.setBounds(112, 29, 56, 22);
         panel_1.add(txt_Id);
         txt_Id.setColumns(10);
@@ -266,8 +266,8 @@ public class RegRecurso extends JDialog {
         			}else {
         				recursoMod.setTipo(txt_tipo.getText().toString());
         			}
-        			JOptionPane.showMessageDialog(null, "Modificación exitosa.", 
-							"Modificación", JOptionPane.INFORMATION_MESSAGE);
+        			JOptionPane.showMessageDialog(null, "Modificaciï¿½n exitosa.", 
+							"Modificaciï¿½n", JOptionPane.INFORMATION_MESSAGE);
         			dispose();
         		}
         	}
@@ -289,7 +289,7 @@ public class RegRecurso extends JDialog {
     }
 
     private void clean() {
-        txt_Id.setText("R-" + GestionEvento.getInstance().codRecursos);
+        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(7));
         txt_Nombre.setText("");
         txt_tipo.setText("");
         rdLocal.setSelected(true);

@@ -16,13 +16,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import logico.Comision;
-import logico.Evento;
-import logico.GestionEvento;
-import logico.Jurado;
-import logico.Persona;
-import logico.Recurso;
-import logico.RecursoLocal;
+import logico.*;
 
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
@@ -53,8 +47,8 @@ import java.awt.Font;
 public class PlanificarEvento extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	private String[] headersComision = {"Código", "Nombre", "Area"};
-	private String[] headersRecurso = {"Código", "Nombre", "Tipo"};
+	private String[] headersComision = {"Cï¿½digo", "Nombre", "Area"};
+	private String[] headersRecurso = {"Cï¿½digo", "Nombre", "Tipo"};
 	private static DefaultTableModel modeloComision;
 	private static Object[] rowComision;
 	private static DefaultTableModel modeloRecurso;
@@ -131,7 +125,7 @@ public class PlanificarEvento extends JDialog {
 			
 			txtCodigo = new JTextField();
 			txtCodigo.setEditable(false);
-			txtCodigo.setText("Evento-"+GestionEvento.getInstance().codEvento);
+			txtCodigo.setText("E-"+ GeneradorCodigos.generarCodigoUnico(5));
 			txtCodigo.setBounds(96, 30, 151, 20);
 			panel_1.add(txtCodigo);
 			txtCodigo.setColumns(10);
@@ -210,7 +204,7 @@ public class PlanificarEvento extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if(existeJurados(selectedComision)) {
 						JOptionPane.showMessageDialog(null, 
-								"Esta comisión tiene jurados en común con otra ya seleccionada.",
+								"Esta comisiï¿½n tiene jurados en comï¿½n con otra ya seleccionada.",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					}else {
 						selectedComision.setSelected(true);
@@ -409,7 +403,7 @@ public class PlanificarEvento extends JDialog {
 							}
 							if(cantRecurSel == 0 || cantComiSel == 0) {
 								JOptionPane.showMessageDialog(null, 
-										"Debe seleccionar al menos una comisión y un recurso.",
+										"Debe seleccionar al menos una comisiï¿½n y un recurso.",
 										"Error", JOptionPane.ERROR_MESSAGE);
 							}else {
 								if(tieneLocal) {
@@ -428,7 +422,7 @@ public class PlanificarEvento extends JDialog {
 									}
 									GestionEvento.getInstance().insertarEvento(evento);
 									JOptionPane.showMessageDialog(null, 
-											"Planificación exitosa.",
+											"Planificaciï¿½n exitosa.",
 											"Aviso", JOptionPane.WARNING_MESSAGE);
 									clean();
 								}else {
@@ -527,7 +521,7 @@ public class PlanificarEvento extends JDialog {
 			if(comision.getSelected()) {
 				for (Jurado jurado : comision.getJurado()) {
 					for (Jurado jurado2 : obj.getJurado()) {
-						if(jurado2.getId().equals(jurado.getId())) {
+						if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
 							return true;
 						}
 					}
@@ -538,7 +532,7 @@ public class PlanificarEvento extends JDialog {
 	}
 	
 	private void clean() {
-		txtCodigo.setText("Evento-"+GestionEvento.getInstance().codEvento);
+		txtCodigo.setText("E-"+GeneradorCodigos.generarCodigoUnico(5));
 		txtTitulo.setText("");
 		cmbTipo.setSelectedIndex(0);
 		Date fechaActual = new Date();
