@@ -8,7 +8,6 @@ import java.awt.Toolkit;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -29,18 +28,13 @@ import javax.swing.SpinnerDateModel;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
-import java.awt.SystemColor;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-import javax.swing.JProgressBar;
 import javax.swing.ListSelectionModel;
 import java.awt.Font;
 
@@ -303,10 +297,10 @@ public class PlanificarEvento extends JDialog {
 			btnAddRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnAddRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(!(tieneLocal) && (selectedRecurso.getTipo().toString().equals("Local"))) {
+					if(!(tieneLocal) && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
 						selectedRecurso.setSelected(true);
 						tieneLocal = true;
-					}else if(tieneLocal && (selectedRecurso.getTipo().toString().equals("Local"))) {
+					}else if(tieneLocal && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
 						JOptionPane.showMessageDialog(null, 
 				                "Solo se puede seleccionar un local.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
@@ -327,7 +321,7 @@ public class PlanificarEvento extends JDialog {
 			btnQuitRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnQuitRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(selectedRecurso.getTipo().toString().equals("Local")) {
+					if(selectedRecurso.getIdTipo().toString().equals("Local")) {
 						tieneLocal = false;
 					}
 					selectedRecurso.setSelected(false);
@@ -465,7 +459,7 @@ public class PlanificarEvento extends JDialog {
 				if(obj.getSelected()) {
 					rowRecursoSelected[0] = obj.getId();
 					rowRecursoSelected[1] = obj.getNombre();
-					rowRecursoSelected[2] = obj.getTipo();
+					rowRecursoSelected[2] = obj.getIdTipo();
 					modeloRecursoSelected.addRow(rowRecursoSelected);
 				}
 			}
@@ -481,7 +475,7 @@ public class PlanificarEvento extends JDialog {
 				if(!(obj.getSelected())) {
 					rowRecurso[0] = obj.getId();
 					rowRecurso[1] = obj.getNombre();
-					rowRecurso[2] = obj.getTipo();
+					rowRecurso[2] = obj.getIdTipo();
 					modeloRecurso.addRow(rowRecurso);
 				}
 			}

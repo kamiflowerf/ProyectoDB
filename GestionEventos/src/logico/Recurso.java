@@ -1,7 +1,6 @@
 package logico;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 public class Recurso implements Serializable {
 	
@@ -11,16 +10,16 @@ public class Recurso implements Serializable {
 	private static final long serialVersionUID = 1L;
 	protected String id;
 	protected String nombre;
-	protected String tipo;
+	protected String idTipo;
 	protected Boolean disponibilidad;
 	protected Boolean selected;
 	protected Local local;
 	
-	public Recurso(String id, String nombre, String tipo, Boolean disponibilidad, Boolean selected, Local local) {
+	public Recurso(String id, String nombre, String idTipo, Boolean disponibilidad, Local local) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
-		this.tipo = tipo;
+		this.idTipo = idTipo;
 		this.disponibilidad = disponibilidad;
 		this.selected = selected;
 		this.local = local;
@@ -42,12 +41,12 @@ public class Recurso implements Serializable {
 		this.nombre = nombre;
 	}
 
-	public String getTipo() {
-		return tipo;
+	public String getIdTipo() {
+		return idTipo;
 	}
 
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
+	public void setIdTipo(String idTipo) {
+		this.idTipo = idTipo;
 	}
 
 	public Boolean getDisponibilidad() {

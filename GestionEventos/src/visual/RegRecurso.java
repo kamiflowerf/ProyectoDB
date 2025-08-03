@@ -38,7 +38,7 @@ public class RegRecurso extends JDialog {
             txt_Id.setText(recurso.getId());
             txt_Nombre.setText(recurso.getNombre());
             
-            if(recurso.getTipo().equals("Local")) {
+            if(recurso.getIdTipo().equals("Local")) {
                 rdLocal.setSelected(true);
                 rdOtro.setSelected(false);
                 rdLocal.setEnabled(false);
@@ -53,7 +53,7 @@ public class RegRecurso extends JDialog {
                 rdOtro.setEnabled(false);
                 panel_campus.setVisible(false);
                 panel_otro.setVisible(true);
-                txt_tipo.setText(recurso.getTipo());
+                txt_tipo.setText(recurso.getIdTipo());
             }
             
             for (Component comp : getContentPane().getComponents()) {
@@ -233,7 +233,6 @@ public class RegRecurso extends JDialog {
                                         txt_Nombre.getText().toString(),
                                         "Local",
                                         true,
-                                        false,
                                         localObj);
                                 GestionEvento.getInstance().insertarRecurso(localRecurso);
         						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
@@ -249,14 +248,13 @@ public class RegRecurso extends JDialog {
         								txt_Nombre.getText().toString(), 
         								txt_tipo.getText().toString(),
                                         true,
-                                        false,
                                         null);
         						GestionEvento.getInstance().insertarRecurso(otro);
         						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
         								"Registro", JOptionPane.INFORMATION_MESSAGE);
         						clean();
         					} else {
-        						JOptionPane.showMessageDialog(null, "Debe especificar el tipo de recurso", 
+        						JOptionPane.showMessageDialog(null, "Debe especificar el idTipo de recurso",
         								"Error", JOptionPane.ERROR_MESSAGE);
         					}
         				}
@@ -268,10 +266,10 @@ public class RegRecurso extends JDialog {
         			String cod = txt_Id.getText().toString();
         			Recurso recursoMod = GestionEvento.getInstance().buscarRecursoID(cod);
         			recursoMod.setNombre(txt_Nombre.getText().toString());
-        			if(recursoMod.getTipo().equals("Local")) {
+        			if(recursoMod.getIdTipo().equals("Local")) {
                         recursoMod.getLocal().setCiudad(cmbCampus.getSelectedItem().toString());
         			}else {
-        				recursoMod.setTipo(txt_tipo.getText().toString());
+        				recursoMod.setIdTipo(txt_tipo.getText().toString());
         			}
         			JOptionPane.showMessageDialog(null, "Modificaci�n exitosa.", 
 							"Modificaci�n", JOptionPane.INFORMATION_MESSAGE);

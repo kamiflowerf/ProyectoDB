@@ -10,11 +10,11 @@ public class TrabajoCientifico implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
 	private String nombre;
-	private String area;
+	private Area area;
 	private Participante autor;	
 	private boolean seleccionado;
 	
-	public TrabajoCientifico(String id, String nombre, String area, Participante autor) {
+	public TrabajoCientifico(String id, String nombre, Area area, Participante autor) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
@@ -35,10 +35,10 @@ public class TrabajoCientifico implements Serializable {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-	public String getArea() {
+	public Area getArea() {
 		return area;
 	}
-	public void setArea(String area) {
+	public void setArea(Area area) {
 		this.area = area;
 	}
 	public Participante getAutor() {

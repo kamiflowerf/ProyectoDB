@@ -21,7 +21,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerDateModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -163,7 +162,7 @@ public class ModEvento extends JDialog {
 			cmbTipo = new JComboBox();
 			cmbTipo.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Conferencia", "Panel", "Ponencia", "Poster", "Mesa Reonda"}));
 			cmbTipo.setBounds(489, 30, 139, 20);
-			cmbTipo.setSelectedItem(evento.getTipo().toString());
+			cmbTipo.setSelectedItem(evento.getIdTipo().toString());
 			panel_1.add(cmbTipo);
 			
 			JLabel lblNewLabel_3 = new JLabel("Fecha:");
@@ -313,10 +312,10 @@ public class ModEvento extends JDialog {
 			btnAddRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnAddRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(!(tieneLocal) && (selectedRecurso.getTipo().toString().equals("Local"))) {
+					if(!(tieneLocal) && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
 						selectedRecurso.setSelected(true);
 						tieneLocal = true;
-					}else if(tieneLocal && (selectedRecurso.getTipo().toString().equals("Local"))) {
+					}else if(tieneLocal && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
 						JOptionPane.showMessageDialog(null, 
 				                "Solo se puede seleccionar un local.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
@@ -337,7 +336,7 @@ public class ModEvento extends JDialog {
 			btnQuitRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnQuitRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(selectedRecurso.getTipo().toString().equals("Local")) {
+					if(selectedRecurso.getIdTipo().toString().equals("Local")) {
 						tieneLocal = false;
 					}
 					selectedRecurso.setSelected(false);
@@ -416,7 +415,7 @@ public class ModEvento extends JDialog {
 							}else {
 								if(tieneLocal) {
 									evento.setTitulo(txtTitulo.getText().toString());
-									evento.setTipo(cmbTipo.getSelectedItem().toString());
+									evento.setIdTipo(cmbTipo.getSelectedItem().toString());
 									evento.setFecha(fecha);
 									evento.getComisiones().clear();
 									evento.getRecursos().clear();
@@ -483,7 +482,7 @@ public class ModEvento extends JDialog {
 				if(obj.getSelected()) {
 					rowRecursoSelected[0] = obj.getId();
 					rowRecursoSelected[1] = obj.getNombre();
-					rowRecursoSelected[2] = obj.getTipo();
+					rowRecursoSelected[2] = obj.getIdTipo();
 					modeloRecursoSelected.addRow(rowRecursoSelected);
 				}
 			}
@@ -499,7 +498,7 @@ public class ModEvento extends JDialog {
 				if(!(obj.getSelected())) {
 					rowRecurso[0] = obj.getId();
 					rowRecurso[1] = obj.getNombre();
-					rowRecurso[2] = obj.getTipo();
+					rowRecurso[2] = obj.getIdTipo();
 					modeloRecurso.addRow(rowRecurso);
 				}
 			}

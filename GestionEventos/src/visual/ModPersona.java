@@ -73,7 +73,7 @@ public class ModPersona extends JDialog {
         panel_1.setLayout(null);
 
         // Campos con los datos de la persona
-        JLabel lblNewLabel = new JLabel("Cédula:");
+        JLabel lblNewLabel = new JLabel("Cï¿½dula:");
         lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblNewLabel.setBounds(10, 31, 50, 14);
         panel_1.add(lblNewLabel);
@@ -103,7 +103,7 @@ public class ModPersona extends JDialog {
         txtApellido.setBounds(76, 110, 150, 20);
         panel_1.add(txtApellido);
 
-        JLabel lblNewLabel_3 = new JLabel("Teléfono:");
+        JLabel lblNewLabel_3 = new JLabel("Telï¿½fono:");
         lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblNewLabel_3.setBounds(283, 76, 70, 14);
         panel_1.add(lblNewLabel_3);
@@ -112,7 +112,7 @@ public class ModPersona extends JDialog {
         txtTelefono.setBounds(345, 73, 135, 20);
         panel_1.add(txtTelefono);
 
-        // Panel tipo
+        // Panel idTipo
         JPanel panel_2 = new JPanel();
         panel_2.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
         panel_2.setBorder(new TitledBorder(null, "Tipo:", TitledBorder.LEADING, TitledBorder.TOP, 
@@ -137,7 +137,7 @@ public class ModPersona extends JDialog {
         rdJurd.setBounds(287, 15, 109, 23);
         panel_2.add(rdJurd);
 
-        // Panel área
+        // Panel ï¿½rea
         JPanel panel_3 = new JPanel();
         panel_3.setBorder(new TitledBorder(null, "", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panel_3.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
@@ -153,13 +153,13 @@ public class ModPersona extends JDialog {
         cmbArea = new JComboBox();
         cmbArea.setFont(new Font("Tahoma", Font.PLAIN, 13));
         cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", 
-            "Tecnología en informática", "Ciencias de la salud", "Ciencias Sociales", 
-            "Investigación y Desarrollo"}));
+            "Tecnologï¿½a en informï¿½tica", "Ciencias de la salud", "Ciencias Sociales", 
+            "Investigaciï¿½n y Desarrollo"}));
         cmbArea.setEnabled(false);
         cmbArea.setBounds(76, 21, 165, 20);
         panel_3.add(cmbArea);
 
-        // Si es jurado, seleccionar su área
+        // Si es jurado, seleccionar su ï¿½rea
         if (persona instanceof Jurado) {
             Jurado jurado = (Jurado) persona;
             cmbArea.setSelectedItem(jurado.getArea());
@@ -186,7 +186,7 @@ public class ModPersona extends JDialog {
                     miPersona.setTelefono(txtTelefono.getText());
 
                     JOptionPane.showMessageDialog(null, "Persona modificada exitosamente.", 
-                        "Modificación", JOptionPane.INFORMATION_MESSAGE);
+                        "Modificaciï¿½n", JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 }
             }

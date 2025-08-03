@@ -9,7 +9,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.UIManager;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -26,7 +25,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.ScrollPaneConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.ListSelectionModel;
@@ -107,7 +105,7 @@ public class ListEvento extends JDialog {
 					});
 					scrollPane.setViewportView(table);
 					modelo = new DefaultTableModel();
-					String[] identificadores = {"Código", "Titulo", "Tipo", "Fecha", "Estado"};
+					String[] identificadores = {"Cï¿½digo", "Titulo", "Tipo", "Fecha", "Estado"};
 					modelo.setColumnIdentifiers(identificadores);
 					table.setModel(modelo);
 					scrollPane.setViewportView(table);
@@ -125,13 +123,13 @@ public class ListEvento extends JDialog {
 				btnEliminar.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						int option = JOptionPane.showConfirmDialog(null,
-				                "¿Está seguro que desea cancelar este Evento?",
-				                "Confirmación", JOptionPane.YES_NO_OPTION);
+				                "ï¿½Estï¿½ seguro que desea cancelar este Evento?",
+				                "Confirmaciï¿½n", JOptionPane.YES_NO_OPTION);
 				            
 				            if(option == JOptionPane.YES_OPTION) {
 				                GestionEvento.getInstance().eliminarEvento(selected);;
 				                JOptionPane.showMessageDialog(null, 
-						                "Cancelación completada.",
+						                "Cancelaciï¿½n completada.",
 						                "Aviso", JOptionPane.WARNING_MESSAGE);
 				                loadEvento();
 				            }
@@ -207,7 +205,7 @@ public class ListEvento extends JDialog {
 		for (Evento obj : aux) {
 			row[0] = obj.getId();
 			row[1] = obj.getTitulo();
-			row[2] = obj.getTipo();
+			row[2] = obj.getIdTipo();
 			row[3] = formato.format(obj.getFecha());
 			if(obj.getEstado()) {
 				row[4] = "Proximamente";

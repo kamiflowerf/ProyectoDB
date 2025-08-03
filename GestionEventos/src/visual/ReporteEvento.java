@@ -57,9 +57,9 @@ public class ReporteEvento extends JDialog {
         contentPanel.add(mainPanel);
         mainPanel.setLayout(null);
 
-        // Panel Información General
+        // Panel Informaciï¿½n General
         JPanel infoPanel = new JPanel();
-        infoPanel.setBorder(new TitledBorder(null, "Información General", 
+        infoPanel.setBorder(new TitledBorder(null, "Informaciï¿½n General", 
             TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
         infoPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -80,14 +80,14 @@ public class ReporteEvento extends JDialog {
         lblFecha.setBounds(10, 40, 200, 14);
         infoPanel.add(lblFecha);
 
-        JLabel lblTipo = new JLabel("Tipo: " + evento.getTipo());
+        JLabel lblTipo = new JLabel("Tipo: " + evento.getIdTipo());
         lblTipo.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblTipo.setBounds(10, 60, 200, 14);
         infoPanel.add(lblTipo);
 
-        // Panel de Estadísticas
+        // Panel de Estadï¿½sticas
         JPanel statsPanel = new JPanel();
-        statsPanel.setBorder(new TitledBorder(null, "Estadísticas", 
+        statsPanel.setBorder(new TitledBorder(null, "Estadï¿½sticas", 
             TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
         statsPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -112,12 +112,12 @@ public class ReporteEvento extends JDialog {
         lblTotalTrabajos.setBounds(220, 20, 200, 14);
         statsPanel.add(lblTotalTrabajos);
 
-        // Panel de pestañas
+        // Panel de pestaï¿½as
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.setBounds(10, 213, 764, 300);
         mainPanel.add(tabbedPane);
 
-        // Primera pestaña: Comisiones
+        // Primera pestaï¿½a: Comisiones
         JPanel comisionesPanel = new JPanel(new BorderLayout());
         comisionesPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -131,7 +131,7 @@ public class ReporteEvento extends JDialog {
                 return false;
             }
         };
-        String[] headerComisiones = {"Código", "Nombre", "Área", "Jurados", "Trabajos"};
+        String[] headerComisiones = {"Cï¿½digo", "Nombre", "ï¿½rea", "Jurados", "Trabajos"};
         modelComisiones.setColumnIdentifiers(headerComisiones);
 
         tableComisiones = new JTable(modelComisiones);
@@ -140,7 +140,7 @@ public class ReporteEvento extends JDialog {
         scrollComisiones.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         comisionesPanel.add(scrollComisiones);
 
-        // Segunda pestaña: Recursos
+        // Segunda pestaï¿½a: Recursos
         JPanel recursosPanel = new JPanel(new BorderLayout());
         recursosPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -163,7 +163,7 @@ public class ReporteEvento extends JDialog {
         scrollRecursos.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         recursosPanel.add(scrollRecursos);
 
-        // Panel de botón
+        // Panel de botï¿½n
         JPanel buttonPane = new JPanel();
         buttonPane.setBackground(UIManager.getColor("InternalFrame.activeTitleGradient") != null ?
             UIManager.getColor("InternalFrame.activeTitleGradient") :
@@ -207,7 +207,7 @@ public class ReporteEvento extends JDialog {
             Object[] row = {
                 recurso.getId(),
                 recurso.getNombre(),
-                recurso.getTipo(),
+                recurso.getIdTipo(),
                 recurso.getDisponibilidad() ? "Disponible" : "No Disponible"
             };
             modelRecursos.addRow(row);

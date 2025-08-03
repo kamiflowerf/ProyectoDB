@@ -515,11 +515,13 @@ public class RegComision extends JDialog {
 							
 							Comision comision;
 				            if(comisionAModificar == null) {
+								// PATCH TEMPORAL: AREA NULA PARA PODER SUBIR AL REPOSITORIO
 				                comision = new Comision(txtCodigo.getText(), txtNombre.getText(), 
-				                                    cbxArea.getSelectedItem().toString());
+				                                    null);
 				            } else {
 				                comisionAModificar.setNombre(txtNombre.getText());
-				                comisionAModificar.setArea(cbxArea.getSelectedItem().toString());
+								//AQUI TAMBIEN: LO VOY A COMENTAR
+				                //comisionAModificar.setArea(cbxArea.getSelectedItem().toString());
 				                comisionAModificar.getJurado().clear();
 				                comisionAModificar.getTrabajos().clear();
 				                comision = comisionAModificar;

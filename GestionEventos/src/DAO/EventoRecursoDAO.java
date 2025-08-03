@@ -1,6 +1,6 @@
 package DAO;
 
-import logico.Jurado;
+import logico.Recurso;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,12 +8,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class ComisionJuradoDAO {
+public class EventoRecursoDAO {
 
-    public int deleteRelacionJurado(Jurado jurado, Connection con) throws SQLException {
-        String sql = "DELETE FROM COMISION_JURADO WHERE idJurado = ?";
+    public int deleteRelacionRecurso(Recurso recurso, Connection con) throws SQLException {
+        String sql = "DELETE FROM EVENTO_RECURSO WHERE idRecurso = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, jurado.getIdJurado());
+            ps.setString(1, recurso.getId());
             int result = ps.executeUpdate() ;
             ConexionDB.closePreparedStatement(ps);
             return result;
@@ -22,32 +22,32 @@ public class ComisionJuradoDAO {
         }
     }
 
-    public void deleteByComission(Connection con, String idCom) throws SQLException{
+    public void deleteByEvent(Connection con, String idEven) throws SQLException{
         try(PreparedStatement ps = con.prepareStatement(
-                "DELETE FROM COMISION_JURADO WHERE idComision = ?")){
-            ps.setString(1, idCom);
+                "DELETE FROM EVENTO_RECURSO WHERE idEvento = ?")){
+            ps.setString(1, idEven);
             ps.executeUpdate();
         }
     }
 
-    public ArrayList<Jurado> getJuradosPorComision(String idCom){
-        ArrayList<Jurado> jurados = new ArrayList<Jurado>();
+    public ArrayList<Recurso> getRecursoPorEvento(String idEvento) {
+        ArrayList<Recurso> recursos = new ArrayList<Recurso>();
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
             con = ConexionDB.getConnection();
-            String sql = "SELECT j.idJurado FROM jurado j " +
-                         "JOIN COMISION_JURADO cj ON j.idJurado = cj.idJurado " +
-                         "WHERE cj.idComision = ?";
+            String sql = "SELECT er.idRecurso FROM EVENTO_RECURSO er " +
+                    "JOIN Recurso r ON r.idRecurso = er.idRecurso " +
+                    "WHERE er.idEvento = ?";
             ps = con.prepareStatement(sql);
-            ps.setString(1, idCom);
+            ps.setString(1, idEvento);
             rs = ps.executeQuery();
 
             while (rs.next()) {
-                Jurado jurado = new JuradoDAO().get(rs.getString("idJurado"));
-                jurados.add(jurado);
+                Recurso rec = new RecursoDAO().get(rs.getString("idRecurso"));
+                recursos.add(rec);
             }
 
         } catch (SQLException e) {
@@ -61,17 +61,16 @@ public class ComisionJuradoDAO {
                 e.printStackTrace();
             }
         }
-
-        return jurados;
+        return recursos;
     }
 
-    public boolean insertRelation(Connection con, String idJurado, String idComision){
+    public boolean insertRelation(Connection con, String idRecurso, String idEvento){
         PreparedStatement ps = null;
         try {
-            String sql = "INSERT INTO COMISION_JURADO(idComision,idJurado) VALUES (?,?)";
+            String sql = "INSERT INTO EVENTO_RECURSO(idEvento,idRecurso) VALUES (?,?)";
             ps = con.prepareStatement(sql);
-            ps.setString(1,idComision);
-            ps.setString(2, idJurado);
+            ps.setString(1,idEvento);
+            ps.setString(2, idRecurso);
             int filas = ps.executeUpdate();
             return filas > 0;
         } catch (SQLException e) {
@@ -85,5 +84,4 @@ public class ComisionJuradoDAO {
             }
         }
     }
-
 }

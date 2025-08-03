@@ -197,7 +197,8 @@ public class RegTrabajo extends JDialog {
         				JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
                                 "Error", JOptionPane.ERROR_MESSAGE);
         			}else {
-        				TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), cmbArea.getSelectedItem().toString(), (Participante) participante);
+                        //                                                                                     PATCH TEMPORAL: AREA NULA PARA PODER SUBIR A GIT
+        				TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), null, (Participante) participante);
         				GestionEvento.getInstance().insertarTrabajo(trabajo);
         				JOptionPane.showMessageDialog(null, "Registro exitoso.", 
                                 "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -213,7 +214,8 @@ public class RegTrabajo extends JDialog {
                                     "Error", JOptionPane.ERROR_MESSAGE);
         				}else {
         					Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
-        					TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), cmbArea.getSelectedItem().toString(), participante);
+        					// PATCH TEMPORAL
+                            TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), null, participante);
         					GestionEvento.getInstance().insertarPersonas(participante);
         					GestionEvento.getInstance().insertarTrabajo(trabajo);
         					JOptionPane.showMessageDialog(null, "Registro exitoso.", 

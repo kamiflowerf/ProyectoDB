@@ -2,38 +2,68 @@ package DAO;
 
 import logico.Area;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 
 public class AreaDAO implements DAO<Area> {
     @Override
     public Area get(String Id) throws SQLException {
-        return null;
+        Connection con = ConexionDB.getConnection();
+        Area area = null;
+
+        String sql = "SELECT idArea, nombreArea FROM Area WHERE idArea = ?";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1,Id);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            area = new Area(Id, rs.getString("nombreArea"));
+        }
+
+        ConexionDB.closeResultSet(rs);
+        ConexionDB.closePreparedStatement(ps);
+        ConexionDB.closeConnection(con);
+        return area;
     }
 
     @Override
-    public List<Area> getAll() throws SQLException {
-        return Collections.emptyList();
+    public ArrayList<Area> getAll() throws SQLException {
+        Connection con = ConexionDB.getConnection();
+        ArrayList<Area> lista = new ArrayList<Area>();
+
+        String sql = "SELECT idArea, nombreArea FROM Area";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Area area = new Area(
+              rs.getString("idArea"),
+              rs.getString("nombreArea")
+            );
+            lista.add(area);
+        }
+
+        ConexionDB.closeResultSet(rs);
+        ConexionDB.closePreparedStatement(ps);
+        ConexionDB.closeConnection(con);
+        return lista;
+    }
+
+
+    @Override
+    public boolean insert(Area area) throws SQLException {
+        return false;
     }
 
     @Override
-    public int save(Area area) throws SQLException {
-        return 0;
+    public boolean update(Area area) throws SQLException {
+        return false;
     }
 
     @Override
-    public int insert(Area area) throws SQLException {
-        return 0;
-    }
-
-    @Override
-    public int update(Area area) throws SQLException {
-        return 0;
-    }
-
-    @Override
-    public int delete(Area area) throws SQLException {
-        return 0;
+    public boolean delete(Area area) throws SQLException {
+        return false;
     }
 }

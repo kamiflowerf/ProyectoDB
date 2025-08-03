@@ -11,12 +11,12 @@ public class Comision implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String codComision;
 	private String nombre;
-	private String area;
+	private Area area;
 	private ArrayList<Jurado> jurado;
 	private ArrayList<TrabajoCientifico> trabajos;
 	private Boolean selected;
 	
-	public Comision(String codComision, String nombre, String area) {
+	public Comision(String codComision, String nombre, Area area) {
 		super();
 		this.codComision = codComision;
 		this.nombre = nombre;
@@ -38,10 +38,10 @@ public class Comision implements Serializable {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-	public String getArea() {
+	public Area getArea() {
 		return area;
 	}
-	public void setArea(String area) {
+	public void setArea(Area area) {
 		this.area = area;
 	}
 	public ArrayList<Jurado> getJurado() {

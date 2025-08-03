@@ -179,8 +179,8 @@ public class ListRecurso extends JDialog {
 	    for (Recurso recurso : GestionEvento.getInstance().getMisRecursos()) {
 	        row[0] = recurso.getId();
 	        row[1] = recurso.getNombre();
-	        row[2] = recurso.getTipo();
-	        if("Local".equals(recurso.getTipo()) && recurso.getLocal() != null) {
+	        row[2] = recurso.getIdTipo();
+	        if("Local".equals(recurso.getIdTipo()) && recurso.getLocal() != null) {
 	            row[3] = recurso.getLocal().getCiudad();
 	        } else {
 	            row[3] = "N/A";
