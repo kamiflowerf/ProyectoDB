@@ -14,10 +14,8 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import logico.Comision;
 import logico.GestionEvento;
 import logico.Recurso;
-import logico.RecursoLocal;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -92,7 +90,7 @@ public class ListRecurso extends JDialog {
 				}
 			});
 			modelo = new DefaultTableModel();
-			String[] identificadores = {"Código", "Nombre", "Tipo", "Campus"};
+			String[] identificadores = {"Cï¿½digo", "Nombre", "Tipo", "Campus"};
 			modelo.setColumnIdentifiers(identificadores);
 			table.setModel(modelo);
 			scrollPane.setViewportView(table);
@@ -138,15 +136,15 @@ public class ListRecurso extends JDialog {
 					public void actionPerformed(ActionEvent e) {
 				        if(selectedRow >= 0) {
 				            int option = JOptionPane.showConfirmDialog(null,
-				                "¿Está seguro que desea eliminar este recurso?",
-				                "Confirmación", JOptionPane.YES_NO_OPTION);
+				                "ï¿½Estï¿½ seguro que desea eliminar este recurso?",
+				                "Confirmaciï¿½n", JOptionPane.YES_NO_OPTION);
 				            
 				            if(option == JOptionPane.YES_OPTION) {
 				                String codigo = (String) modelo.getValueAt(selectedRow, 0);
 				                Recurso recursoSeleccionado = GestionEvento.getInstance().buscarRecursoID(codigo);
 				                GestionEvento.getInstance().eliminarRecurso(recursoSeleccionado);
 				                JOptionPane.showMessageDialog(null, 
-						                "Eliminación completada.",
+						                "Eliminaciï¿½n completada.",
 						                "Aviso", JOptionPane.ERROR_MESSAGE);
 				                btnModificar.setEnabled(false);
 				                btnEliminar.setEnabled(false);
@@ -182,8 +180,8 @@ public class ListRecurso extends JDialog {
 	        row[0] = recurso.getId();
 	        row[1] = recurso.getNombre();
 	        row[2] = recurso.getTipo();
-	        if(recurso instanceof RecursoLocal) {
-	            row[3] = ((RecursoLocal) recurso).getCiudad();
+	        if("Local".equals(recurso.getTipo()) && recurso.getLocal() != null) {
+	            row[3] = recurso.getLocal().getCiudad();
 	        } else {
 	            row[3] = "N/A";
 	        }

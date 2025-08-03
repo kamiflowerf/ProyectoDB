@@ -11,5 +11,8 @@ public class Local {
 
     public String getIdLocal() { return this.idLocal; }
     public String getCiudad() { return this.ciudad; }
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
+    }
     public void setIdLocal(String idLocal) { this.idLocal = idLocal; }
 }

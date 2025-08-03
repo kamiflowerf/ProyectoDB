@@ -13,9 +13,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.awt.event.ActionEvent;
 import javax.swing.UIManager;
 import javax.swing.JScrollPane;
@@ -25,8 +22,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import logico.GestionEvento;
-import logico.Recurso;
-import logico.RecursoLocal;
 import logico.User;
 
 public class ListUsuario extends JDialog {
@@ -126,8 +121,8 @@ public class ListUsuario extends JDialog {
 					            }
 					            
 					            int option = JOptionPane.showConfirmDialog(null,
-					                "¿Está seguro que desea eliminar este usuario?",
-					                "Confirmación", JOptionPane.YES_NO_OPTION);
+					                "ï¿½Estï¿½ seguro que desea eliminar este usuario?",
+					                "Confirmaciï¿½n", JOptionPane.YES_NO_OPTION);
 					            
 					            if(option == JOptionPane.YES_OPTION) {
 					                String username = (String) modelo.getValueAt(selectedRow, 1); 
@@ -135,7 +130,7 @@ public class ListUsuario extends JDialog {
 					                GestionEvento.getInstance().eliminarUser(usuarioSeleccionado);
 					                
 					                JOptionPane.showMessageDialog(null, 
-					                    "Eliminación completada.",
+					                    "Eliminaciï¿½n completada.",
 					                    "Aviso", 
 					                    JOptionPane.INFORMATION_MESSAGE);
 					                

@@ -38,14 +38,14 @@ public class RegRecurso extends JDialog {
             txt_Id.setText(recurso.getId());
             txt_Nombre.setText(recurso.getNombre());
             
-            if(recurso instanceof RecursoLocal) {
+            if(recurso.getTipo().equals("Local")) {
                 rdLocal.setSelected(true);
                 rdOtro.setSelected(false);
                 rdLocal.setEnabled(false);
                 rdOtro.setEnabled(false);
                 panel_campus.setVisible(true);
                 panel_otro.setVisible(false);
-                cmbCampus.setSelectedItem(((RecursoLocal) recurso).getCiudad());
+                cmbCampus.setSelectedItem(recurso.getLocal().getCiudad());
             } else {
                 rdLocal.setSelected(false);
                 rdOtro.setSelected(true);
@@ -227,11 +227,15 @@ public class RegRecurso extends JDialog {
         			if(!(txt_Nombre.getText().equals(""))) {
         				if(rdLocal.isSelected()) {
         					if(cmbCampus.getSelectedIndex() > 0) {
-        						RecursoLocal local = new RecursoLocal(txt_Id.getText().toString(),
-        								txt_Nombre.getText().toString(),
-        								"Local",
-        								cmbCampus.getSelectedItem().toString()); 
-        						GestionEvento.getInstance().insertarRecurso(local);
+        						Local localObj = new Local("L-" + GeneradorCodigos.generarCodigoUnico(5),
+                                        cmbCampus.getSelectedItem().toString());
+                                Recurso localRecurso = new Recurso(txt_Id.getText().toString(),
+                                        txt_Nombre.getText().toString(),
+                                        "Local",
+                                        true,
+                                        false,
+                                        localObj);
+                                GestionEvento.getInstance().insertarRecurso(localRecurso);
         						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
         								"Registro", JOptionPane.INFORMATION_MESSAGE);
         						clean();
@@ -243,7 +247,10 @@ public class RegRecurso extends JDialog {
         					if(!(txt_tipo.getText().equals(""))) {
         						Recurso otro = new Recurso(txt_Id.getText().toString(),
         								txt_Nombre.getText().toString(), 
-        								txt_tipo.getText().toString());
+        								txt_tipo.getText().toString(),
+                                        true,
+                                        false,
+                                        null);
         						GestionEvento.getInstance().insertarRecurso(otro);
         						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
         								"Registro", JOptionPane.INFORMATION_MESSAGE);
@@ -262,7 +269,7 @@ public class RegRecurso extends JDialog {
         			Recurso recursoMod = GestionEvento.getInstance().buscarRecursoID(cod);
         			recursoMod.setNombre(txt_Nombre.getText().toString());
         			if(recursoMod.getTipo().equals("Local")) {
-        				((RecursoLocal) recursoMod).setCiudad(cmbCampus.getSelectedItem().toString());
+                        recursoMod.getLocal().setCiudad(cmbCampus.getSelectedItem().toString());
         			}else {
         				recursoMod.setTipo(txt_tipo.getText().toString());
         			}
