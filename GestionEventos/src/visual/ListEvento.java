@@ -25,6 +25,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.ScrollPaneConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.ListSelectionModel;
@@ -90,8 +91,12 @@ public class ListEvento extends JDialog {
 							index = table.getSelectedRow();
 							if(index >= 0) {
 								String cod = table.getValueAt(index, 0).toString();
-								selected = GestionEvento.getInstance().buscarEventoID(cod);
-								if(selected != null && selected.getEstado()) {
+                                try {
+                                    selected = GestionEvento.getInstance().buscarEventoID(cod);
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                if(selected != null && selected.getEstado()) {
 									btnVerReporte.setEnabled(false);
 									btnModificar.setEnabled(true);
 									btnEliminar.setEnabled(true);
@@ -105,7 +110,7 @@ public class ListEvento extends JDialog {
 					});
 					scrollPane.setViewportView(table);
 					modelo = new DefaultTableModel();
-					String[] identificadores = {"C�digo", "Titulo", "Tipo", "Fecha", "Estado"};
+					String[] identificadores = {"Código", "Titulo", "Tipo", "Fecha", "Estado"};
 					modelo.setColumnIdentifiers(identificadores);
 					table.setModel(modelo);
 					scrollPane.setViewportView(table);
@@ -123,13 +128,18 @@ public class ListEvento extends JDialog {
 				btnEliminar.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						int option = JOptionPane.showConfirmDialog(null,
-				                "�Est� seguro que desea cancelar este Evento?",
-				                "Confirmaci�n", JOptionPane.YES_NO_OPTION);
+				                "¿Está seguro que desea cancelar este Evento?",
+				                "Confirmación", JOptionPane.YES_NO_OPTION);
 				            
 				            if(option == JOptionPane.YES_OPTION) {
-				                GestionEvento.getInstance().eliminarEvento(selected);;
+                                try {
+                                    GestionEvento.getInstance().eliminarEvento(selected);
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+
 				                JOptionPane.showMessageDialog(null, 
-						                "Cancelaci�n completada.",
+						                "Cancelación completada.",
 						                "Aviso", JOptionPane.WARNING_MESSAGE);
 				                loadEvento();
 				            }
@@ -199,13 +209,18 @@ public class ListEvento extends JDialog {
 
 	private void loadEvento() {
 		modelo.setRowCount(0);
-		ArrayList<Evento> aux = GestionEvento.getInstance().getMisEventos();
-		SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+        ArrayList<Evento> aux;
+        try {
+            aux = GestionEvento.getInstance().getMisEventos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
 		row = new Object[table.getColumnCount()];
 		for (Evento obj : aux) {
 			row[0] = obj.getId();
 			row[1] = obj.getTitulo();
-			row[2] = obj.getIdTipo();
+			row[2] = obj.getTipo().getNombre();
 			row[3] = formato.format(obj.getFecha());
 			if(obj.getEstado()) {
 				row[4] = "Proximamente";

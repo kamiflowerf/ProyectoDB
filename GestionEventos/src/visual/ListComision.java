@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -11,18 +12,18 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import java.awt.Color;
+
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
+import DAO.ComisionDAO;
 import logico.Comision;
 import logico.GestionEvento;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.border.SoftBevelBorder;
-import javax.swing.border.BevelBorder;
+
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -95,8 +96,12 @@ public class ListComision extends JDialog {
 					index = table.getSelectedRow();
 					if(index >= 0) {
 						String codigo = table.getValueAt(index, 0).toString();
-						selected = GestionEvento.getInstance().buscarComisionID(codigo);
-						if(selected != null) {
+                        try {
+                            selected = GestionEvento.getInstance().buscarComisionID(codigo);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selected != null) {
 							btnModificar.setEnabled(true);
 							btnEliminar.setEnabled(true);
 						}
@@ -104,7 +109,7 @@ public class ListComision extends JDialog {
 				}
 			});
 			modelo = new DefaultTableModel();
-			String [] identificadores = {"Código", "Nombre", "Area"};
+			String [] identificadores = {"Cï¿½digo", "Nombre", "Area"};
 			modelo.setColumnIdentifiers(identificadores);
 			table.setModel(modelo);
 			scrollPane.setViewportView(table);
@@ -134,7 +139,7 @@ public class ListComision extends JDialog {
 				            }
 				        } else {
 				            JOptionPane.showMessageDialog(null, 
-				                "Debe seleccionar una comisión para modificar.",
+				                "Debe seleccionar una comisiï¿½n para modificar.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				        }
 					}
@@ -155,13 +160,17 @@ public class ListComision extends JDialog {
 				        if(selectedRow >= 0) {
 				        	
 				            int option = JOptionPane.showConfirmDialog(null,
-				                "¿Está seguro que desea eliminar esta comisión?",
-				                "Confirmación", JOptionPane.YES_NO_OPTION);
+				                "ï¿½Estï¿½ seguro que desea eliminar esta comisiï¿½n?",
+				                "Confirmaciï¿½n", JOptionPane.YES_NO_OPTION);
 				            
 				            if(option == JOptionPane.YES_OPTION) {
 				                String codigo = (String) modelo.getValueAt(selectedRow, 0);
-				                eliminarComision(codigo);
-				                btnModificar.setEnabled(false);
+                                try {
+                                    eliminarComision(codigo);
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                btnModificar.setEnabled(false);
 				                btnEliminar.setEnabled(false);
 				                loadComisiones(); 
 				            }
@@ -169,7 +178,7 @@ public class ListComision extends JDialog {
 				        	btnModificar.setEnabled(false);
 			                btnEliminar.setEnabled(false);
 				            JOptionPane.showMessageDialog(null, 
-				                "Debe seleccionar una comisión para eliminar.",
+				                "Debe seleccionar una comisiï¿½n para eliminar.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				        }
 					}
@@ -195,39 +204,50 @@ public class ListComision extends JDialog {
 	}
 	private void loadComisiones() {
 		modelo.setRowCount(0);
-		ArrayList<Comision> aux = GestionEvento.getInstance().getMisComisiones();
-		row = new Object[table.getColumnCount()];
-		for (Comision comision : aux) {
+        row = new Object[table.getColumnCount()];
+		ComisionDAO comisionDAO = new ComisionDAO();
+        ArrayList<Comision> comisions = null;
+        try {
+            comisions = comisionDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        for (Comision comision : comisions) {
 			row[0] = comision.getCodComision();
 			row[1] = comision.getNombre();
-			row[2] = comision.getArea();
+			row[2] = comision.getArea().getNombre();
 			modelo.addRow(row);
 		}
 	}
 	
 	private Comision buscarComision(String codigo) {
-	    for(Comision comision : GestionEvento.getInstance().getMisComisiones()) {
-	        if(comision.getCodComision().equals(codigo)) {
-	            return comision;
-	        }
-	    }
-	    return null;
-	}
+        ComisionDAO dao = new ComisionDAO();
+        try {
+            return dao.get(codigo);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	
-	private void eliminarComision(String codigo) {
-	    Comision comisionAEliminar = null;
-	    for(Comision comision : GestionEvento.getInstance().getMisComisiones()) {
-	        if(comision.getCodComision().equals(codigo)) {
-	            comisionAEliminar = comision;
-	            break;
-	        }
-	    }
-	    
-	    if(comisionAEliminar != null) {
-	        GestionEvento.getInstance().getMisComisiones().remove(comisionAEliminar);
-	        JOptionPane.showMessageDialog(null, 
-	            "Comisión eliminada exitosamente.",
-	            "Información", JOptionPane.INFORMATION_MESSAGE);
-	    }
+	private void eliminarComision(String codigo) throws SQLException {
+		ComisionDAO comisionDAO = new ComisionDAO();
+		Comision comision = comisionDAO.get(codigo);
+		int confirm = JOptionPane.showConfirmDialog(null,
+				"Â¿EstÃ¡s seguro de que deseas eliminar la comisiÃ³n con cÃ³digo " + codigo + "?",
+				"ConfirmaciÃ³n", JOptionPane.YES_NO_OPTION);
+
+		if(confirm == JOptionPane.YES_OPTION) {
+			boolean eliminado = comisionDAO.delete(comision);
+			if(eliminado) {
+				JOptionPane.showMessageDialog(null,
+						"ComisiÃ³n eliminada exitosamente.",
+						"InformaciÃ³n", JOptionPane.INFORMATION_MESSAGE);
+				loadComisiones();
+			} else {
+				JOptionPane.showMessageDialog(null,
+						"No se pudo eliminar la comisiÃ³n.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
 }

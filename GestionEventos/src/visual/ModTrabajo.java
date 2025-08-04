@@ -3,23 +3,26 @@ package visual;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+
+import DAO.AreaDAO;
+import DAO.TrabajoCientificoDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class ModTrabajo extends JDialog {
-    private final JPanel contentPanel = new JPanel();
-    private JTextField txtId;
     private Boolean existe = false;
     private Persona obj = null;
     private JTextField txtNombre;
-    private JComboBox cmbArea;
-    private JPanel panelAutor;
+    private JComboBox<Area> cmbArea;
     private JTextField txtCedulaAutor;
     private JTextField txtNombreAutor;
     private JTextField txtApellidosAutor;
     private JTextField txtTelefonoAutor;
-    private TrabajoCientifico trabajo;
 
     public static void main(String[] args) {
         try {
@@ -32,7 +35,6 @@ public class ModTrabajo extends JDialog {
     }
 
     public ModTrabajo(TrabajoCientifico trabajo) {
-        this.trabajo = trabajo;
         if (trabajo == null) {
             dispose();
             return;
@@ -46,6 +48,7 @@ public class ModTrabajo extends JDialog {
         setBounds(100, 100, 685, 500);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
+        JPanel contentPanel = new JPanel();
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
         contentPanel.setLayout(new BorderLayout(0, 0));
@@ -77,7 +80,7 @@ public class ModTrabajo extends JDialog {
         lblId.setBounds(24, 32, 26, 16);
         panel_1.add(lblId);
 
-        txtId = new JTextField(trabajo.getId());
+        JTextField txtId = new JTextField(trabajo.getId());
         txtId.setEditable(false);
         txtId.setBounds(104, 30, 116, 22);
         panel_1.add(txtId);
@@ -94,22 +97,56 @@ public class ModTrabajo extends JDialog {
         panel_1.add(txtNombre);
 
         // �rea
-        JLabel lblArea = new JLabel("�rea:");
+        JLabel lblArea = new JLabel("Área:");
         lblArea.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblArea.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblArea.setBounds(23, 116, 56, 16);
         panel_1.add(lblArea);
 
-        cmbArea = new JComboBox();
-        cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Tecnolog�a en inform�tica", 
-            "Ciencias de la salud", "Ciencias Sociales", "Investigaci�n y Desarrollo"}));
-        cmbArea.setSelectedItem(trabajo.getArea());
+        AreaDAO areaDAO = new AreaDAO();
+        try{
+            ArrayList<Area> areas = areaDAO.getAll();
+            DefaultComboBoxModel<Area> model = new DefaultComboBoxModel<>();
+            model.addElement(new Area("0","<Seleccione>"));
+
+            for(Area area : areas){
+                model.addElement(area);
+            }
+
+            cmbArea = new JComboBox<>(model);
+            cmbArea.setRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+																  boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						if (value instanceof Area) {
+							Area area = (Area) value;
+							setText(area.getNombre());
+						}
+						return this;
+					}
+				});
+
+            if(trabajo.getArea() != null){
+                for (int i = 0; i < cmbArea.getItemCount(); i++) {
+						Area item = cmbArea.getItemAt(i);
+						if (Objects.equals(item.getIdArea(), trabajo.getArea().getIdArea())) {
+							cmbArea.setSelectedIndex(i);
+							break;
+						}
+                }
+            } else {
+                cmbArea.setSelectedIndex(0);
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
         cmbArea.setEnabled(false);
         cmbArea.setBounds(104, 115, 179, 20);
         panel_1.add(cmbArea);
 
         // Panel Datos del Autor
-        panelAutor = new JPanel();
+        JPanel panelAutor = new JPanel();
         panelAutor.setForeground(Color.WHITE);
         panelAutor.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), 
             "Datos del Autor", TitledBorder.LEADING, TitledBorder.TOP, null, 
@@ -123,7 +160,7 @@ public class ModTrabajo extends JDialog {
         Participante autor = trabajo.getAutor();
 
         // C�dula Autor
-        JLabel lblCedulaAutor = new JLabel("C�dula:");
+        JLabel lblCedulaAutor = new JLabel("Cédula:");
         lblCedulaAutor.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblCedulaAutor.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblCedulaAutor.setBounds(27, 39, 70, 16);
@@ -158,7 +195,7 @@ public class ModTrabajo extends JDialog {
         panelAutor.add(txtApellidosAutor);
 
         // Tel�fono
-        JLabel lblTelefono = new JLabel("Tel�fono:");
+        JLabel lblTelefono = new JLabel("Teléfono:");
         lblTelefono.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblTelefono.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblTelefono.setBounds(345, 96, 70, 16);
@@ -173,8 +210,12 @@ public class ModTrabajo extends JDialog {
         btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 13));
         btnNewButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		obj = GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText().toString());
-        		if(obj != null) {
+                try {
+                    obj = GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText());
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                if(obj != null) {
         			if(obj instanceof Participante) {
         				existe = true;
         				txtNombreAutor.setText(obj.getNombre());
@@ -211,25 +252,37 @@ public class ModTrabajo extends JDialog {
         JButton btnModificar = new JButton("Modificar");
         btnModificar.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		if(existe) {
-        			if(!(cmbArea.getSelectedItem().toString().equals(""))) {
-        				trabajo.setNombre(txtNombre.getText().toString());
-        				obj = (Participante)GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText().toString());
-        				trabajo.setAutor((Participante) obj);
-        				JOptionPane.showMessageDialog(null, "Modificaci�n completada.", 
-                                "Modificaci�n", JOptionPane.WARNING_MESSAGE);
+                TrabajoCientificoDAO tDao = new TrabajoCientificoDAO();
+                if(existe) {
+        			if(validarArea()) {
+        				trabajo.setNombre(txtNombre.getText());
+                        try {
+                            obj = GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText());
+                            trabajo.setAutor((Participante) obj);
+                            tDao.update(trabajo);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+        				JOptionPane.showMessageDialog(null, "Modificación completada.",
+                                "Modificación", JOptionPane.WARNING_MESSAGE);
         				dispose();
         			}else {
         				JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
                                 "Error", JOptionPane.ERROR_MESSAGE);
         			}
         		}else {
-        			trabajo.setNombre(txtNombre.getText().toString());
-        			Participante participante = new Participante("P"+GeneradorCodigos.generarCodigoUnico(5),txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
-        			GestionEvento.getInstance().insertarPersonas(participante);
-    				trabajo.setAutor(participante);
-    				JOptionPane.showMessageDialog(null, "Modificaci�n completada.", 
-                            "Modificaci�n", JOptionPane.WARNING_MESSAGE);
+        			trabajo.setNombre(txtNombre.getText());
+        			Participante participante = new Participante("P"+GeneradorCodigos.generarCodigoUnico(5),txtCedulaAutor.getText(), txtNombreAutor.getText(), txtApellidosAutor.getText(), txtTelefonoAutor.getText());
+                    try {
+                        GestionEvento.getInstance().insertarPersonas(participante);
+                        trabajo.setAutor(participante);
+                        tDao.update(trabajo);
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+    				JOptionPane.showMessageDialog(null, "Modificación completada.",
+                            "Modificación", JOptionPane.WARNING_MESSAGE);
     				dispose();
         		}
         	}
@@ -238,5 +291,15 @@ public class ModTrabajo extends JDialog {
         buttonPane.add(btnModificar);
         btnCancelar.setFont(new Font("Tahoma", Font.BOLD, 13));
         buttonPane.add(btnCancelar);
+    }
+
+    public boolean validarArea() {
+        if (cmbArea.getSelectedIndex() <= 0) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un área",
+                    "Validación", JOptionPane.WARNING_MESSAGE);
+            cmbArea.requestFocus();
+            return false;
+        }
+        return true;
     }
 }

@@ -3,6 +3,7 @@ package DAO;
 import logico.Comision;
 import logico.Evento;
 import logico.Recurso;
+import logico.TipoEvento;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,20 +15,18 @@ public class EventoDAO implements DAO<Evento>{
         Evento evento = null;
 
         String sql = "SELECT e.idEvento, e.titulo, e.fecha, e.estado, te.idTipEven, te.nombre AS Tipo FROM Evento e " +
-                "JOIN TipoEvento te ON te.idTipEven = e.idTipEven" +
-                "JOIN EVENTO_COMISION ec ON ec.idEvento = e.idEvento" +
-                "JOIN EVENTO_RECURSO er ON er.idEvento = e.idEvento" +
+                "JOIN TipoEvento te ON te.idTipEven = e.idTipEven " +
                 "WHERE idEvento = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, Id);
         ResultSet rs = ps.executeQuery();
 
         if(rs.next()) {
-            //TipoEvento idTipo = new TipoEventoDAO().get(rs.getString("idTipEven"));
+            TipoEvento tipo = new TipoEventoDAO().get(rs.getString("idTipEven"));
             evento = new Evento(
                     Id,
                     rs.getString("titulo"),
-                    rs.getString("idTipEven"),
+                    tipo,
                     rs.getDate("fecha")
             );
             evento.setEstado(rs.getBoolean("estado"));
@@ -56,9 +55,7 @@ public class EventoDAO implements DAO<Evento>{
         try {
             con = ConexionDB.getConnection();
             String sql = "SELECT e.idEvento, e.titulo, e.fecha, e.estado, te.idTipEven, te.nombre AS Tipo FROM Evento e " +
-                    "JOIN TipoEvento te ON te.idTipEven = e.idTipEven" +
-                    "JOIN EVENTO_COMISION ec ON ec.idEvento = e.idEvento" +
-                    "JOIN EVENTO_RECURSO er ON er.idEvento = e.idEvento";
+                    "JOIN TipoEvento te ON te.idTipEven = e.idTipEven";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -67,10 +64,11 @@ public class EventoDAO implements DAO<Evento>{
 
             while (rs.next()) {
                 String idEvento = rs.getString("idEvento");
+                TipoEvento tipo = new TipoEventoDAO().get(rs.getString("idTipEven"));
                 Evento evento = new Evento(
                         idEvento,
                         rs.getString("titulo"),
-                        rs.getString("idTipEven"),
+                        tipo,
                         rs.getDate("fecha")
                 );
                 evento.setEstado(rs.getBoolean("estado"));
@@ -110,9 +108,11 @@ public class EventoDAO implements DAO<Evento>{
 
             String sql = "INSERT INTO Evento(idEvento,titulo,idTipEven,fecha) VALUES(?,?,?,?)";
             ps = con.prepareStatement(sql);
+            TipoEventoDAO teDAO = new TipoEventoDAO();
+
             ps.setString(1, evento.getId());
             ps.setString(2, evento.getTitulo());
-            ps.setString(3, evento.getIdTipo());
+            ps.setString(3, evento.getTipo().getIdTipEven());
             ps.setDate(4, (Date) evento.getFecha());
             int filas = ps.executeUpdate();
             if(filas == 0) {

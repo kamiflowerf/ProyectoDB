@@ -1,15 +1,16 @@
 package visual;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
+
+import DAO.AreaDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.Font;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class ModPersona extends JDialog {
     private final JPanel contentPanel = new JPanel();
@@ -19,7 +20,7 @@ public class ModPersona extends JDialog {
     private JTextField txtTelefono;
     private JRadioButton rdJurd;
     private JRadioButton rdPart;
-    private JComboBox cmbArea;
+    private JComboBox<Area> cmbArea;
     private Persona miPersona;
 
     public static void main(String[] args) {
@@ -103,7 +104,7 @@ public class ModPersona extends JDialog {
         txtApellido.setBounds(76, 110, 150, 20);
         panel_1.add(txtApellido);
 
-        JLabel lblNewLabel_3 = new JLabel("Tel�fono:");
+        JLabel lblNewLabel_3 = new JLabel("Teléfono:");
         lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblNewLabel_3.setBounds(283, 76, 70, 14);
         panel_1.add(lblNewLabel_3);
@@ -112,7 +113,7 @@ public class ModPersona extends JDialog {
         txtTelefono.setBounds(345, 73, 135, 20);
         panel_1.add(txtTelefono);
 
-        // Panel idTipo
+        // Panel tipo
         JPanel panel_2 = new JPanel();
         panel_2.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
         panel_2.setBorder(new TitledBorder(null, "Tipo:", TitledBorder.LEADING, TitledBorder.TOP, 
@@ -150,11 +151,46 @@ public class ModPersona extends JDialog {
         lblNewLabel_4.setBounds(10, 24, 46, 14);
         panel_3.add(lblNewLabel_4);
 
-        cmbArea = new JComboBox();
-        cmbArea.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", 
-            "Tecnolog�a en inform�tica", "Ciencias de la salud", "Ciencias Sociales", 
-            "Investigaci�n y Desarrollo"}));
+        AreaDAO areaDAO = new AreaDAO();
+        try{
+            ArrayList<Area> areas = areaDAO.getAll();
+            DefaultComboBoxModel<Area> model = new DefaultComboBoxModel<>();
+            model.addElement(new Area("0","<Seleccione>"));
+
+            for(Area area : areas){
+                model.addElement(area);
+            }
+
+            cmbArea = new JComboBox<>(model);
+            cmbArea.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                              boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (value instanceof Area) {
+                        Area area = (Area) value;
+                        setText(area.getNombre());
+                    }
+                    return this;
+                }
+            });
+
+            if(miPersona instanceof Jurado){
+                if(((Jurado)miPersona).getArea() != null){
+                    for (int i = 0; i < cmbArea.getItemCount(); i++) {
+                        Area item = cmbArea.getItemAt(i);
+                        if (Objects.equals(item.getIdArea(), ((Jurado)miPersona).getArea().getIdArea())) {
+                            cmbArea.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                } else {
+                    cmbArea.setSelectedIndex(0);
+                }
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
         cmbArea.setEnabled(false);
         cmbArea.setBounds(76, 21, 165, 20);
         panel_3.add(cmbArea);
@@ -175,8 +211,8 @@ public class ModPersona extends JDialog {
         okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(txtNombre.getText().equals("") || txtApellido.getText().equals("") || 
-                   txtTelefono.getText().equals("")) {
+                if(txtNombre.getText().isEmpty() || txtApellido.getText().isEmpty() ||
+                        txtTelefono.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.", 
                         "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
@@ -186,7 +222,7 @@ public class ModPersona extends JDialog {
                     miPersona.setTelefono(txtTelefono.getText());
 
                     JOptionPane.showMessageDialog(null, "Persona modificada exitosamente.", 
-                        "Modificaci�n", JOptionPane.INFORMATION_MESSAGE);
+                        "Modificación", JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 }
             }

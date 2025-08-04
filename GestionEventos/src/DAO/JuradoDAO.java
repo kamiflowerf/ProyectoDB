@@ -15,9 +15,9 @@ public class JuradoDAO implements DAO<Jurado> {
         Connection con = ConexionDB.getConnection();
         Jurado jurado = null;
 
-        String sql = "SELECT j.idJurado, p.dni, p.nombre, p.apellido, j.idArea, p.telefono, a.nombreArea FROM Jurado j" +
-                "JOIN Persona p ON p.dni = j.dni" +
-                "JOIN Area a ON a.idArea = j.idArea" +
+        String sql = "SELECT j.idJurado, p.dni, p.nombre, p.apellido, j.idArea, p.telefono, a.nombreArea FROM Jurado j " +
+                "JOIN Persona p ON p.dni = j.dni " +
+                "JOIN Area a ON a.idArea = j.idArea " +
                 "WHERE idJurado = ?";
 
         PreparedStatement ps = con.prepareStatement(sql);
@@ -44,8 +44,8 @@ public class JuradoDAO implements DAO<Jurado> {
     public ArrayList<Jurado> getAll() throws SQLException {
         Connection con = ConexionDB.getConnection();
         ArrayList<Jurado> jurados = new ArrayList<>();
-        String sql = "SELECT j.idJurado, p.dni, p.nombre, p.apellido, j.idArea, p.telefono, a.nombreArea FROM Jurado j" +
-                "JOIN Persona p ON p.dni = j.dni" +
+        String sql = "SELECT j.idJurado, p.dni, p.nombre, p.apellido, j.idArea, p.telefono, a.nombreArea FROM Jurado j " +
+                "JOIN Persona p ON p.dni = j.dni " +
                 "JOIN Area a ON a.idArea = j.idArea";
         PreparedStatement ps = con.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();

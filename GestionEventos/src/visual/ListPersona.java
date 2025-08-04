@@ -4,31 +4,29 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import java.awt.Color;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
+import DAO.JuradoDAO;
+import DAO.ParticipanteDAO;
+import DAO.PersonaDAO;
 import logico.GestionEvento;
 import logico.Jurado;
 import logico.Participante;
 import logico.Persona;
-import logico.Recurso;
-
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 import javax.swing.JTable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -107,17 +105,18 @@ public class ListPersona extends JDialog {
 						indexP = tableP.getSelectedRow();
 						if(indexP >= 0) {
 							String cedula = tableP.getValueAt(indexP, 0).toString();
-							selected = GestionEvento.getInstance().buscarPersonasCedula(cedula);
-							if(selected != null) {
-								btnModificar.setEnabled(true);
-								btnEliminar.setEnabled(true);
-							}
-						}
+                            PersonaDAO persona = new PersonaDAO();
+                            selected = persona.getPersonByDni(cedula);
+                            if(selected != null) {
+                                btnModificar.setEnabled(true);
+                                btnEliminar.setEnabled(true);
+                            }
+                        }
 					}
 				});
 				scrollPane.setViewportView(tableP);
 				modeloPart = new DefaultTableModel();
-				String[] identificadores1 = {"Cédula", "Nombre", "Teléfono"};
+				String[] identificadores1 = {"CÃ©dula", "Nombre", "TelÃ©fono"};
 				modeloPart.setColumnIdentifiers(identificadores1);
 				tableP.setModel(modeloPart);
 				scrollPane.setViewportView(tableP);
@@ -142,8 +141,12 @@ public class ListPersona extends JDialog {
 						indexJ = tableJ.getSelectedRow();
 						if(indexJ >= 0) {
 							String cedula = tableJ.getValueAt(indexJ, 0).toString();
-							selected = GestionEvento.getInstance().buscarPersonasCedula(cedula);
-							if(selected != null) {
+                            try {
+                                selected = GestionEvento.getInstance().buscarPersonasCedula(cedula);
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            if(selected != null) {
 								btnEliminar.setEnabled(true);
 								btnModificar.setEnabled(true);
 							}
@@ -152,7 +155,7 @@ public class ListPersona extends JDialog {
 				});
 				scrollPane.setViewportView(tableJ);
 				modeloJurd = new DefaultTableModel();
-				String[] identificadores = {"Cédula","Nombre", "Área"};
+				String[] identificadores = {"Cï¿½dula","Nombre", "ï¿½rea"};
 				modeloJurd.setColumnIdentifiers(identificadores);
 				tableJ.setModel(modeloJurd);
 				scrollPane.setViewportView(tableJ);
@@ -186,13 +189,17 @@ public class ListPersona extends JDialog {
 			btnEliminar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int option = JOptionPane.showConfirmDialog(null,
-			                "¿Está seguro que desea eliminar este recurso?",
-			                "Confirmación", JOptionPane.YES_NO_OPTION);
+			                "ï¿½Estï¿½ seguro que desea eliminar este recurso?",
+			                "Confirmaciï¿½n", JOptionPane.YES_NO_OPTION);
 			            
 			            if(option == JOptionPane.YES_OPTION) {
-			                GestionEvento.getInstance().eliminarPersona(selected);
-			                JOptionPane.showMessageDialog(null, 
-					                "Eliminación completada.",
+                            try {
+                                GestionEvento.getInstance().eliminarPersona(selected);
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            JOptionPane.showMessageDialog(null,
+					                "Eliminaciï¿½n completada.",
 					                "Aviso", JOptionPane.WARNING_MESSAGE);
 			                btnModificar.setEnabled(false);
 			                btnEliminar.setEnabled(false);
@@ -225,29 +232,39 @@ public class ListPersona extends JDialog {
 
 	private void loadJurado() {
 		modeloJurd.setRowCount(0);
-		ArrayList<Persona> aux = GestionEvento.getInstance().getMisPersonas();
 		rowJurd = new Object[tableJ.getColumnCount()];
-		for (Persona obj : aux) {
-			if(obj instanceof Jurado) {
-				rowJurd[0] = obj.getCedula();
-				rowJurd[1] = obj.getNombre();
-				rowJurd[2] = ((Jurado) obj).getArea();
-				modeloJurd.addRow(rowJurd);
-			}
+
+		JuradoDAO juradoDAO = new JuradoDAO();
+        ArrayList<Jurado> jurados ;
+        try {
+            jurados = juradoDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        for (Jurado jurado : jurados) {
+			rowJurd[0] = jurado.getCedula();
+			rowJurd[1] = jurado.getNombre() + " " + jurado.getApellidos();
+			rowJurd[2] = jurado.getArea() != null ? jurado.getArea().getNombre() : "N/A";
+			modeloJurd.addRow(rowJurd);
 		}
 	}
 
 	private void loadParticipante() {
 		modeloPart.setRowCount(0);
-		ArrayList<Persona> aux = GestionEvento.getInstance().getMisPersonas();
 		rowPart = new Object[tableP.getColumnCount()];
-		for (Persona obj : aux) {
-			if(obj instanceof Participante){
-				rowPart[0] = obj.getCedula();
-				rowPart[1] = obj.getNombre() + " " + obj.getApellidos();
-				rowPart[2] = obj.getTelefono();
-				modeloPart.addRow(rowPart);
-			}
+
+		ParticipanteDAO pDao = new ParticipanteDAO();
+        ArrayList<Participante> participantes ;
+        try {
+            participantes = pDao.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        for (Participante par : participantes) {
+			rowPart[0] = par.getCedula();
+			rowPart[1] = par.getNombre() + " " + par.getApellidos();
+			rowPart[2] = par.getTelefono();
+			modeloPart.addRow(rowPart);
 		}
 	}
 }

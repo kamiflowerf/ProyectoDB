@@ -4,22 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.border.EmptyBorder;
-
 import logico.GestionEvento;
-import logico.User;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
-
 import javax.swing.UIManager;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -29,6 +18,7 @@ import javax.swing.JButton;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class LogInUsuario extends JFrame {
 
@@ -42,48 +32,14 @@ public class LogInUsuario extends JFrame {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				FileInputStream gestionIn;
-				FileOutputStream gestionOut;
-				ObjectInputStream gestionRead;
-				ObjectOutputStream gestionWrite;
-				try {
-					gestionIn = new FileInputStream("archivo.dat");
-					gestionRead = new ObjectInputStream(gestionIn);
-					GestionEvento temp = (GestionEvento) gestionRead.readObject();
-					GestionEvento.setGestion(temp);
-					//GestionEvento.getInstance().codPersona = (GestionEvento.getInstance().getMisPersonas().size()+1);
-					//GestionEvento.getInstance().codTrabajos = (GestionEvento.getInstance().getMisTrabajosCientificos().size()+1);
-					//GestionEvento.getInstance().codComision = (GestionEvento.getInstance().getMisComisiones().size()+1);
-					//GestionEvento.getInstance().codEvento = (GestionEvento.getInstance().getMisEventos().size()+1);
-					//GestionEvento.getInstance().codRecursos = (GestionEvento.getInstance().getMisRecursos().size()+1);
-					gestionRead.close();
-					gestionIn.close();
-				}catch(FileNotFoundException e){
-					try {
-						gestionOut = new FileOutputStream("archivo.dat");
-						gestionWrite = new ObjectOutputStream(gestionOut);
-	                    User aux = new User("David", "Ramos", "Admin", "Admin", "Administrador");
-	                    GestionEvento.getInstance().getMisUsuarios().add(aux);
-	                    gestionWrite.writeObject(GestionEvento.getInstance());
-	                    gestionWrite.close();
-	                    gestionOut.close();
-	                } catch (FileNotFoundException e1) {
-	                }catch (IOException e1) {
-	                    e1.printStackTrace();
-	                }
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				try {
+                try {
+                    GestionEvento.getInstance();
 					LogInUsuario frame = new LogInUsuario();
 					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
 			}
 		});
 	}
@@ -130,7 +86,7 @@ public class LogInUsuario extends JFrame {
 		panel.add(txtUserName);
 		txtUserName.setColumns(10);
 		
-		JLabel lblNewLabel_1 = new JLabel("Contrase\u00F1a:");
+		JLabel lblNewLabel_1 = new JLabel("Contraseña:");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 13));
 		lblNewLabel_1.setBounds(132, 163, 90, 14);
 		panel.add(lblNewLabel_1);
@@ -143,16 +99,20 @@ public class LogInUsuario extends JFrame {
 		JButton btnNewButton = new JButton("Log In");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(GestionEvento.getInstance().confirmUser(txtUserName.getText().toString(), txtPassword.getText().toString())) {
-					PrincipalGestion frame = new PrincipalGestion();
-					dispose();
-					frame.setVisible(true);
-				}else {
-					JOptionPane.showMessageDialog(null, 
-		                    "Usuario no existente.",
-		                    "Error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
+                try {
+                    if(GestionEvento.getInstance().confirmUser(txtUserName.getText(), txtPassword.getText())) {
+                        PrincipalGestion frame = new PrincipalGestion();
+                        dispose();
+                        frame.setVisible(true);
+                    }else {
+                        JOptionPane.showMessageDialog(null,
+					"Usuario no existente.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
 		});
 		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 		btnNewButton.setBounds(122, 233, 98, 23);

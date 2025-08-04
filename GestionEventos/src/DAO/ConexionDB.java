@@ -3,30 +3,28 @@ package DAO;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Enumeration;
 import java.util.Properties;
 
 public class ConexionDB {
-    private static String URL;
-    private static String USUARIO;
-    private static String CLAVE;
+    static String url = "jdbc:sqlserver://localhost:1433;"
+            + "databaseName=GestionEventos;"
+            + "user=sa;"
+            + "password=kami1234;"
+            + "encrypt=true;"
+            + "trustServerCertificate=true;";
 
     private ConexionDB() {}
 
-    static{
-        try{
-            Properties prop = new Properties();
-            prop.load(new FileInputStream("config.properties"));
-            URL = prop.getProperty("db.url");
-            USUARIO = prop.getProperty("db.user");
-            CLAVE = prop.getProperty("db.password");
-        } catch (IOException e) {
-            System.err.println("No se pudo leer el archivo de configuracion");
-            e.printStackTrace();
-        }
-    }
-
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USUARIO, CLAVE);
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            //System.out.println("Conexion exitosa a la base de datos");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return DriverManager.getConnection(url);
     }
 
     public static void closeConnection(Connection connection) throws SQLException {

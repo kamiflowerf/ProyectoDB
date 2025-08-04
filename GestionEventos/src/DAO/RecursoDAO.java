@@ -2,6 +2,7 @@ package DAO;
 
 import logico.Local;
 import logico.Recurso;
+import logico.TipoRecurso;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,17 +16,18 @@ public class RecursoDAO implements DAO<Recurso>{
         Connection con = ConexionDB.getConnection();
         Recurso recurso = null;
 
-        String sql = "SELECT nombre,disponibilidad,idTipRec,idEvento,idLocal FROM Recurso WHERE idRecurso = ?";
+        String sql = "SELECT nombre,disponibilidad,idTipRec,idLocal FROM Recurso WHERE idRecurso = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, Id);
         ResultSet rs = ps.executeQuery();
 
         if(rs.next()){
             Local local = new LocalDAO().get(rs.getString("idLocal"));
+            TipoRecurso trec = new TipoRecursoDAO().get(rs.getString("idTipRec"));
             recurso = new Recurso(
                     Id,
                     rs.getString("nombre"),
-                    rs.getString("idTipRec"),
+                    trec,
                     rs.getBoolean("disponibilidad"),
                     local
             );
@@ -41,16 +43,17 @@ public class RecursoDAO implements DAO<Recurso>{
     public ArrayList<Recurso> getAll() throws SQLException {
         Connection con = ConexionDB.getConnection();
         ArrayList<Recurso> recursos = new ArrayList<>();
-        String sql = "SELECT idRecurso,nombre,disponibilidad,idTipRec,idEvento,idLocal FROM Recurso";
+        String sql = "SELECT idRecurso,nombre,disponibilidad,idTipRec,idLocal FROM Recurso";
         PreparedStatement ps = con.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
 
         while(rs.next()){
             Local local = new LocalDAO().get(rs.getString("idLocal"));
+            TipoRecurso trec = new TipoRecursoDAO().get(rs.getString("idTipRec"));
             Recurso recurso = new Recurso(
                     rs.getString("idRecurso"),
                     rs.getString("nombre"),
-                    rs.getString("idTipRec"),
+                    trec,
                     rs.getBoolean("disponibilidad"),
                     local
             );
@@ -66,13 +69,14 @@ public class RecursoDAO implements DAO<Recurso>{
     @Override
     public boolean insert(Recurso recurso) throws SQLException {
         Connection con = ConexionDB.getConnection();
-        String sql = "INSERT INTO Recurso(idRecurso,nombre,disponibilidad,idLocal) VALUES(?,?,?,?)";
+        String sql = "INSERT INTO Recurso(idRecurso,nombre,disponibilidad,idTipRec,idLocal) VALUES(?,?,?,?,?)";
         PreparedStatement ps = con.prepareStatement(sql);
 
         ps.setString(1, recurso.getId());
         ps.setString(2, recurso.getNombre());
         ps.setBoolean(3, recurso.getDisponibilidad());
-        ps.setString(4, recurso.getLocal().getIdLocal());
+        ps.setString(4,recurso.getTipo().getIdTipRec());
+        ps.setString(5, recurso.getLocal().getIdLocal());
 
         int result = ps.executeUpdate();
         ConexionDB.closePreparedStatement(ps);

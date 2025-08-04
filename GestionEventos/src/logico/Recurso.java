@@ -10,16 +10,16 @@ public class Recurso implements Serializable {
 	private static final long serialVersionUID = 1L;
 	protected String id;
 	protected String nombre;
-	protected String idTipo;
+	protected TipoRecurso tipo;
 	protected Boolean disponibilidad;
 	protected Boolean selected;
 	protected Local local;
 	
-	public Recurso(String id, String nombre, String idTipo, Boolean disponibilidad, Local local) {
+	public Recurso(String id, String nombre, TipoRecurso tipo, Boolean disponibilidad, Local local) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
-		this.idTipo = idTipo;
+		this.tipo = tipo;
 		this.disponibilidad = disponibilidad;
 		this.selected = selected;
 		this.local = local;
@@ -41,12 +41,12 @@ public class Recurso implements Serializable {
 		this.nombre = nombre;
 	}
 
-	public String getIdTipo() {
-		return idTipo;
+	public TipoRecurso getTipo() {
+		return tipo;
 	}
 
-	public void setIdTipo(String idTipo) {
-		this.idTipo = idTipo;
+	public void setTipo(TipoRecurso tipo) {
+		this.tipo = tipo;
 	}
 
 	public Boolean getDisponibilidad() {

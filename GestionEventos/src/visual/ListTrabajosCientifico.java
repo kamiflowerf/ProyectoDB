@@ -6,9 +6,12 @@ import java.awt.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import DAO.TrabajoCientificoDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class ListTrabajosCientifico extends JDialog {
     private final JPanel contentPanel = new JPanel();
@@ -31,7 +34,7 @@ public class ListTrabajosCientifico extends JDialog {
     public ListTrabajosCientifico() {
         Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
-        setTitle("Listar Trabajos CientÌficos");
+        setTitle("Listar Trabajos Cient√≠ficos");
         setBounds(100, 100, 800, 500);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
@@ -51,7 +54,7 @@ public class ListTrabajosCientifico extends JDialog {
         JPanel panelTable = new JPanel();
         panelTable.setForeground(Color.WHITE);
         panelTable.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), 
-            "Trabajos CientÌficos", TitledBorder.LEADING, TitledBorder.TOP, null, 
+            "Trabajos Cient√≠ficos", TitledBorder.LEADING, TitledBorder.TOP, null,
             UIManager.getColor("FormattedTextField.foreground")));
         panelTable.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
         panelTable.setBounds(12, 13, 748, 382);
@@ -68,7 +71,7 @@ public class ListTrabajosCientifico extends JDialog {
                 return false;
             }
         };
-        String[] headers = {"ID", "Nombre", "¡rea", "Autor", "CÈdula Autor"};
+        String[] headers = {"ID", "Nombre", "√Årea", "Autor", "C√©dula Autor"};
         model.setColumnIdentifiers(headers);
 
         table = new JTable();
@@ -102,18 +105,23 @@ public class ListTrabajosCientifico extends JDialog {
         	public void actionPerformed(ActionEvent e) {
         		if (selectedTrabajo != null) {
         			int option = JOptionPane.showConfirmDialog(null,
-        					"øEst· seguro que desea eliminar este trabajo cientÌfico?",
-        					"ConfirmaciÛn", JOptionPane.YES_NO_OPTION);
+        					"¬øEst√° seguro que desea eliminar este trabajo cient√≠fico?",
+        					"Confirmaci√≥n", JOptionPane.YES_NO_OPTION);
 
         			if (option == JOptionPane.YES_OPTION) {
-        				GestionEvento.getInstance().getMisTrabajosCientificos().remove(selectedTrabajo);
-        				loadTrabajos();
+        				TrabajoCientificoDAO trabajoDao = new TrabajoCientificoDAO();
+                        try {
+                            trabajoDao.delete(selectedTrabajo);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        loadTrabajos();
         				btnEliminar.setEnabled(false);
         				btnModificar.setEnabled(false);
         				selectedTrabajo = null;
         				JOptionPane.showMessageDialog(null, 
-        						"Trabajo cientÌfico eliminado exitosamente",
-        						"EliminaciÛn exitosa",
+        						"Trabajo cient√≠fico eliminado exitosamente",
+        						"Eliminaci√≥n exitosa",
         						JOptionPane.INFORMATION_MESSAGE);
         			}
         		}
@@ -146,26 +154,30 @@ public class ListTrabajosCientifico extends JDialog {
     }
 
     private TrabajoCientifico findTrabajoById(String id) {
-        for (TrabajoCientifico trabajo : GestionEvento.getInstance().getMisTrabajosCientificos()) {
-            if (trabajo.getId().equals(id)) {
-                return trabajo;
-            }
+        TrabajoCientificoDAO dao = new TrabajoCientificoDAO();
+        try {
+            return dao.get(id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     private void loadTrabajos() {
-        model.setRowCount(0); 
-        for (TrabajoCientifico trabajo : GestionEvento.getInstance().getMisTrabajosCientificos()) {
-            Participante autor = trabajo.getAutor();
-            Object[] row = {
-                trabajo.getId(),
-                trabajo.getNombre(),
-                trabajo.getArea(),
-                autor.getNombre() + " " + autor.getApellidos(),
-                autor.getCedula()
-            };
-            model.addRow(row);
+        model.setRowCount(0);
+        try {
+            for (TrabajoCientifico trabajo : GestionEvento.getInstance().getMisTrabajosCientificos()) {
+                Participante autor = trabajo.getAutor();
+                Object[] row = {
+                    trabajo.getId(),
+                    trabajo.getNombre(),
+                    trabajo.getArea().getNombre(),
+                    autor.getNombre() + " " + autor.getApellidos(),
+                    autor.getCedula()
+                };
+                model.addRow(row);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         selectedTrabajo = null;
     }

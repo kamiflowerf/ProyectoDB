@@ -1,8 +1,10 @@
 package logico;
 
+import DAO.*;
+
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class GestionEvento implements Serializable {
 	
@@ -15,126 +17,182 @@ public class GestionEvento implements Serializable {
 	private ArrayList<Comision> misComisiones;
 	private ArrayList<Evento> misEventos;
 	private ArrayList<Recurso> misRecursos;
-	private ArrayList<User> misUsuarios;
-	
+	private ArrayList<Jurado> misJurados;
+	private ArrayList<Participante> misParticipantes;
+	private TrabajoCientificoDAO trabajoDAO;
+	private ComisionDAO comisionDAO;
+	private EventoDAO eventoDAO;
+	private PersonaDAO personaDAO;
+	private RecursoDAO recursoDAO;
+	private UserDAO usuarioDAO;
+	private JuradoDAO juradoDAO;
+	private ParticipanteDAO participanteDAO;
+
 	private static User currentUser;
 	
 	public static GestionEvento gestion = null;
 	
-	public GestionEvento() {
+	public GestionEvento() throws SQLException {
 		super();
-		misUsuarios = new ArrayList<>();
-		misRecursos = new ArrayList<>();
-		misPersonas = new ArrayList<>();
-		misTrabajosCientificos = new ArrayList<>();
-		misComisiones = new ArrayList<>();
-		misEventos = new ArrayList<>();
+		trabajoDAO = new TrabajoCientificoDAO();
+		comisionDAO = new ComisionDAO();
+		eventoDAO = new EventoDAO();
+		recursoDAO = new RecursoDAO();
+		usuarioDAO = new UserDAO();
+		juradoDAO = new JuradoDAO();
+		personaDAO = new PersonaDAO();
+		participanteDAO = new ParticipanteDAO();
+
+		misRecursos = new ArrayList<>(recursoDAO.getAll());
+		misJurados = new ArrayList<>(juradoDAO.getAll());
+		misParticipantes = new ArrayList<>(participanteDAO.getAll());
+		misTrabajosCientificos = new ArrayList<>(trabajoDAO.getAll());
+		misComisiones = new ArrayList<>(comisionDAO.getAll());
+		misEventos = new ArrayList<>(eventoDAO.getAll());
+
+		if (usuarioDAO.getAll().isEmpty()) {
+			User admin = new User("admin", "Admin", "General", Seguridad.sha256("admin123"), "Administrador");
+			usuarioDAO.insert(admin);
+		}
 	}
 	
-	public static GestionEvento getInstance() {
+	public static GestionEvento getInstance() throws SQLException {
 		if(gestion == null) {
 			gestion = new GestionEvento();
 		}return gestion;
 	}
-	
-	
 	public ArrayList<Persona> getMisPersonas() {
 		return misPersonas;
 	}
-	public void setMisPersonas(ArrayList<Persona> misPersonas) {
-		this.misPersonas = misPersonas;
-	}
 	public ArrayList<TrabajoCientifico> getMisTrabajosCientificos() {
-		return misTrabajosCientificos;
-	}
-	public void setMisTrabajosCientificos(ArrayList<TrabajoCientifico> misTrabajosCientificos) {
-		this.misTrabajosCientificos = misTrabajosCientificos;
-	}
+        try {
+            return trabajoDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public ArrayList<Comision> getMisComisiones() {
-		return misComisiones;
-	}
-	public void setMisComisiones(ArrayList<Comision> misComisiones) {
-		this.misComisiones = misComisiones;
-	}
+        try {
+            return comisionDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public ArrayList<Evento> getMisEventos() {
-		return misEventos;
-	}
-	public void setMisEventos(ArrayList<Evento> misEventos) {
-		this.misEventos = misEventos;
-	}
+        try {
+            return eventoDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public ArrayList<Recurso> getMisRecursos() {
-		return misRecursos;
-	}
-	public void setMisRecursos(ArrayList<Recurso> misRecursos) {
-		this.misRecursos = misRecursos;
-	}
+        try {
+            return recursoDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public ArrayList<User> getMisUsuarios() {
-		return misUsuarios;
-	}
-	public void setMisUsuarios(ArrayList<User> misUsuarios) {
-		this.misUsuarios = misUsuarios;
-	}
+        try {
+            return usuarioDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public User getCurrentUser() {
 		return currentUser;
 	}
-	public void setCurrentUser(User currentUser) {
-		this.currentUser = currentUser;
-	}
 
-	public void insertarPersonas(Persona obj) {
-		misPersonas.add(obj);
+	public void insertarPersonas(Persona obj) throws SQLException {
+		if(obj instanceof Jurado){
+			juradoDAO.insert((Jurado) obj);
+			misJurados.add((Jurado)obj);
+		} else if(obj instanceof Participante) {
+			participanteDAO.insert((Participante) obj);
+			misParticipantes.add((Participante)obj);
+		}
 	}
 	
 	public void eliminarPersona(Persona obj) {
-		misPersonas.remove(obj);
+		if(obj instanceof Jurado){
+            try {
+                juradoDAO.delete((Jurado) obj);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            misJurados.remove((Jurado)obj);
+		} else if(obj instanceof Participante) {
+            try {
+                participanteDAO.delete((Participante) obj);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            misParticipantes.remove((Participante)obj);
+		}
 	}
 	
 	public Persona buscarPersonasCedula(String cedula) {
-		for (Persona persona : misPersonas) {
-			if(persona.getCedula().equals(cedula)) {
-				return persona;
-			}
-		}return null;
+		return personaDAO.getPersonByDni(cedula);
 	}
+
+	public Jurado buscarJuradoId(String Id){
+        try {
+           return juradoDAO.get(Id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+	public Participante buscarParticipanteId(String Id){
+        try {
+            return participanteDAO.get(Id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	
-	public void insertarTrabajo(TrabajoCientifico obj) {
+	public void insertarTrabajo(TrabajoCientifico obj) throws SQLException {
+		trabajoDAO.insert(obj);
 		misTrabajosCientificos.add(obj);
 	}
-	
-	public void eliminarTrabajo(TrabajoCientifico obj) {
-		misTrabajosCientificos.remove(obj);
+
+	public void insertarUser(User user) throws SQLException{
+		usuarioDAO.insert(user);
 	}
-	
+
 	public TrabajoCientifico buscarTrabajoID(String cod) {
-		for (TrabajoCientifico trabajo : misTrabajosCientificos) {
-			if(trabajo.getId().equals(cod)) {
-				return trabajo;
-			}
-		}return null;
-	}
+        try {
+            return trabajoDAO.get(cod);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	
-	public void insertarComision(Comision obj) {
+	public void insertarComision(Comision obj) throws SQLException {
+		comisionDAO.insert(obj);
 		misComisiones.add(obj);
 	}
 	
-	public void eliminarComision(Comision obj) {
-		misComisiones.remove(obj);
-	}
-	
 	public Comision buscarComisionID(String cod) {
-		for (Comision comision : misComisiones) {
-			if(comision.getCodComision().equals(cod)) {
-				return comision;
-			}
-		}return null;
-	}
+        try {
+            return comisionDAO.get(cod);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	
-	public void insertarEvento(Evento obj) {
+	public void insertarEvento(Evento obj) throws SQLException {
+		eventoDAO.insert(obj);
 		misEventos.add(obj);
 	}
 	
 	public void eliminarEvento(Evento obj) {
-		misEventos.remove(obj);
+        try {
+            eventoDAO.delete(obj);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        misEventos.remove(obj);
 	}
 	
 	public Evento buscarEventoID(String cod) {
@@ -146,71 +204,52 @@ public class GestionEvento implements Serializable {
 	}
 	
 	public void insertarRecurso(Recurso obj) {
-		misRecursos.add(obj);
+        try {
+            recursoDAO.insert(obj);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        misRecursos.add(obj);
 	}
 	
 	public void eliminarRecurso(Recurso obj) {
-		misRecursos.remove(obj);
+        try {
+            recursoDAO.delete(obj);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        misRecursos.remove(obj);
 	}
 	
 	public void eliminarUser(User obj) {
-		misUsuarios.remove(obj);
+        try {
+            usuarioDAO.delete(obj);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	public Recurso buscarRecursoID(String cod) {
-		for (Recurso recurso : misRecursos) {
-			if(recurso.getId().equals(cod)) {
-				return recurso;
-			}
-		}return null;
-	}
+        try {
+            return recursoDAO.get(cod);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	
 	public User buscarUsuarioUsername(String username) {
-		for (User usuario : misUsuarios) {
-			if(usuario.getUserName().equals(username)) {
-				return usuario;
-			}
-		}return null;
-	}
-	
-	
-
-	public ArrayList<TrabajoCientifico> getTrabajosPorComision(String codComision) {
-		
-	    ArrayList<TrabajoCientifico> trabajosEnComision = new ArrayList<>();
-	    for (Comision comision : misComisiones) {
-	        if (comision.getCodComision().equals(codComision)) {
-	            trabajosEnComision.addAll(comision.getTrabajos());
-	            break;
-	        }
-	    }
-	    return trabajosEnComision;
-	}
-
-	public void asignarTrabajoAComision(TrabajoCientifico trabajo, String codComision) {
-	    for (Comision comision : misComisiones) {
-	        if (comision.getCodComision().equals(codComision)) {
-	            comision.getTrabajos().add(trabajo);
-	            break;
-	        }
-	    }
-	}
-
-	public void removerTrabajoDeComision(TrabajoCientifico trabajo, String codComision) {
-	    for (Comision comision : misComisiones) {
-	        if (comision.getCodComision().equals(codComision)) {
-	            comision.getTrabajos().remove(trabajo);
-	            break;
-	        }
-	    }
-	}
+        try {
+            return usuarioDAO.get(username);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	public boolean confirmUser(String userName, String pass) {
-		for (User usuario : misUsuarios) {
-			if(usuario.getUserName().equals(userName) && usuario.getPassword().equals(pass)) {
-				currentUser = usuario;
-				return true;
-			}
+		User usuario = usuarioDAO.autenticarUsuario(userName,pass);
+		if (usuario != null) {
+			currentUser = usuario;
+			return true;
 		}
 		return false;
 	}
@@ -220,12 +259,17 @@ public class GestionEvento implements Serializable {
 	}
 	
 	public boolean existeUserName(String userName) {
-	    for (User usuario : misUsuarios) {
-	        if(usuario.getUserName().equals(userName)) {
-	            return true;
-	        }
-	    }
-	    return false;
+        User user = null;
+        try {
+            user = usuarioDAO.get(userName);
+			if(user != null) {
+				return true;
+			}
+
+		} catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+		return false;
 	}
 }
 

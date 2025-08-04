@@ -15,8 +15,8 @@ public class ParticipanteDAO implements DAO<Participante> {
         Connection con = ConexionDB.getConnection();
         Participante participante = null;
 
-        String sql = "SELECT par.idParticipante, p.dni, p.nombre, p.apellido, p.telefono FROM Participante par" +
-                "JOIN Persona p ON p.dni = par.dni" +
+        String sql = "SELECT par.idParticipante, p.dni, p.nombre, p.apellido, p.telefono FROM Participante par " +
+                "JOIN Persona p ON p.dni = par.dni " +
                 "WHERE idParticipante = ?";
 
         PreparedStatement ps = con.prepareStatement(sql);
@@ -41,7 +41,7 @@ public class ParticipanteDAO implements DAO<Participante> {
     public ArrayList<Participante> getAll() throws SQLException {
         Connection con = ConexionDB.getConnection();
         ArrayList<Participante> lista = new ArrayList<>();
-        String sql = "SELECT par.idParticipante, p.dni, p.nombre, p.apellido, p.telefono FROM Participante par" +
+        String sql = "SELECT par.idParticipante, p.dni, p.nombre, p.apellido, p.telefono FROM Participante par " +
                 "JOIN Persona p ON p.dni = par.dni";
         PreparedStatement ps = con.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();

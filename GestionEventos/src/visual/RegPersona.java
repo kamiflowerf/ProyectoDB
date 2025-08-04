@@ -1,31 +1,18 @@
 package visual;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import java.awt.Color;
+import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
+import DAO.AreaDAO;
 import logico.*;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.JRadioButton;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import java.awt.Font;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class RegPersona extends JDialog {
 
@@ -36,7 +23,7 @@ public class RegPersona extends JDialog {
 	private JTextField txtTelefono;
 	private JRadioButton rdJurd;
 	private JRadioButton rdPart;
-	private JComboBox cmbArea;
+	private JComboBox<Area> cbxArea;
 
 	/**
 	 * Launch the application.
@@ -136,7 +123,7 @@ public class RegPersona extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					rdPart.setSelected(true);
 					rdJurd.setSelected(false);
-					cmbArea.setEnabled(false);
+					cbxArea.setEnabled(false);
 				}
 			});
 			rdPart.setSelected(true);
@@ -150,7 +137,7 @@ public class RegPersona extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					rdJurd.setSelected(true);
 					rdPart.setSelected(false);
-					cmbArea.setEnabled(true);
+					cbxArea.setEnabled(true);
 				}
 			});
 			rdJurd.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
@@ -168,12 +155,37 @@ public class RegPersona extends JDialog {
 			lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_4.setBounds(10, 24, 46, 14);
 			panel_2.add(lblNewLabel_4);
-			
-			cmbArea = new JComboBox();
-			cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Tecnolog\u00EDa en inform\u00E1tica ", "Ciencias de la salud", "Ciencias Sociales", "Investigaci\u00F3n\u00A0y\u00A0Desarrollo"}));
-			cmbArea.setEnabled(false);
-			cmbArea.setBounds(76, 21, 220, 20);
-			panel_2.add(cmbArea);
+
+			AreaDAO areaDAO = new AreaDAO();
+			try{
+				ArrayList<Area> areas = areaDAO.getAll();
+				DefaultComboBoxModel<Area> model = new DefaultComboBoxModel<>();
+				model.addElement(new Area("0","<Seleccione>"));
+
+				for(Area area : areas){
+					model.addElement(area);
+				}
+
+				cbxArea = new JComboBox<>(model);
+				cbxArea.setRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+																  boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						if (value instanceof Area) {
+							Area area = (Area) value;
+							setText(area.getNombre());
+						}
+						return this;
+					}
+				});
+				cbxArea.setSelectedIndex(0);
+			} catch (SQLException e){
+				e.printStackTrace();
+			}
+			cbxArea.setEnabled(false);
+			cbxArea.setBounds(76, 21, 220, 20);
+			panel_2.add(cbxArea);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -185,26 +197,34 @@ public class RegPersona extends JDialog {
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						if(txtCedula.getText().equals("") || txtNombre.getText().equals("") || txtApellido.getText().equals("") || txtTelefono.getText().equals("")) {
+						if(txtCedula.getText().isEmpty() || txtNombre.getText().isEmpty() || txtApellido.getText().isEmpty() || txtTelefono.getText().isEmpty()) {
 							JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
                                     "Error", JOptionPane.ERROR_MESSAGE);
 						}else {
 							if(rdPart.isSelected()) {
-								Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString());
-								GestionEvento.getInstance().insertarPersonas(participante);
-								JOptionPane.showMessageDialog(null, "Operación Exitosa.",
-	                                    "Aviso", JOptionPane.WARNING_MESSAGE);
-								clean();
+								Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText(), txtNombre.getText(), txtApellido.getText(), txtTelefono.getText());
+                                try {
+                                    GestionEvento.getInstance().insertarPersonas(participante);
+									JOptionPane.showMessageDialog(null, "Operación Exitosa.",
+											"Aviso", JOptionPane.WARNING_MESSAGE);
+									clean();
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
 							}else {
-								if(cmbArea.getSelectedIndex() == 0) {
+								if(cbxArea.getSelectedIndex() == 0) {
 									JOptionPane.showMessageDialog(null, "Debe seleccionar un área.",
 		                                    "Error", JOptionPane.ERROR_MESSAGE);
 								}else {
-									Jurado jurado = new Jurado("J-" +GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText().toString(), txtNombre.getText().toString(), txtApellido.getText().toString(), txtTelefono.getText().toString(), (Area) cmbArea.getSelectedItem());
-									GestionEvento.getInstance().insertarPersonas(jurado);
-									JOptionPane.showMessageDialog(null, "Operación Exitosa.",
-		                                    "Aviso", JOptionPane.WARNING_MESSAGE);
-									clean();
+									Jurado jurado = new Jurado("J-"+GeneradorCodigos.generarCodigoUnico(5), txtCedula.getText(), txtNombre.getText(), txtApellido.getText(), txtTelefono.getText(), (Area) cbxArea.getSelectedItem());
+                                    try {
+                                        GestionEvento.getInstance().insertarPersonas(jurado);
+										JOptionPane.showMessageDialog(null, "Operación Exitosa.",
+												"Aviso", JOptionPane.WARNING_MESSAGE);
+										clean();
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
 								}
 							}
 						}
@@ -232,9 +252,9 @@ public class RegPersona extends JDialog {
 		txtNombre.setText("");
 		txtApellido.setText("");
 		txtTelefono.setText("");
-		cmbArea.setSelectedIndex(0);
+		cbxArea.setSelectedIndex(0);
 		rdPart.setSelected(true);
 		rdJurd.setSelected(false);
-		cmbArea.setEnabled(false);
+		cbxArea.setEnabled(false);
 	}
 }

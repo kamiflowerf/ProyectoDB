@@ -10,20 +10,24 @@ import java.awt.Toolkit;
 import java.awt.Color;
 import java.awt.Component;
 
+import DAO.LocalDAO;
+import DAO.TipoRecursoDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class RegRecurso extends JDialog {
     private final JPanel contentPanel = new JPanel();
     private JTextField txt_Id;
     private JTextField txt_Nombre;
-    private JTextField txt_tipo;
+    private JComboBox<TipoRecurso> cbxTipo;
     private JPanel panel_otro;
     private JPanel panel_campus;
     private JRadioButton rdLocal;
     private JRadioButton rdOtro;
-    private JComboBox cmbCampus;
+    private JComboBox<Local> cmbCampus;
     private Boolean modificar = false;
     private Recurso recursoAModificar = null;
     
@@ -38,7 +42,7 @@ public class RegRecurso extends JDialog {
             txt_Id.setText(recurso.getId());
             txt_Nombre.setText(recurso.getNombre());
             
-            if(recurso.getIdTipo().equals("Local")) {
+            if(recurso.getTipo().equals("Local")) {
                 rdLocal.setSelected(true);
                 rdOtro.setSelected(false);
                 rdLocal.setEnabled(false);
@@ -53,7 +57,7 @@ public class RegRecurso extends JDialog {
                 rdOtro.setEnabled(false);
                 panel_campus.setVisible(false);
                 panel_otro.setVisible(true);
-                txt_tipo.setText(recurso.getIdTipo());
+                cbxTipo.setSelectedItem(recurso.getTipo());
             }
             
             for (Component comp : getContentPane().getComponents()) {
@@ -187,8 +191,33 @@ public class RegRecurso extends JDialog {
         panel.add(panel_campus);
         panel_campus.setLayout(null);
         
-        cmbCampus = new JComboBox();
-        cmbCampus.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Santiago", "Santo Domingo"}));
+        LocalDAO localDAO = new LocalDAO();
+        try{
+            ArrayList<Local> ciudades = localDAO.getAll();
+            DefaultComboBoxModel<Local> model = new DefaultComboBoxModel<>();
+            model.addElement(new Local("0","<Seleccione>"));
+
+            for(Local ciudad : ciudades){
+                model.addElement(ciudad);
+            }
+
+            cmbCampus = new JComboBox<>(model);
+            cmbCampus.setRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                                  boolean isSelected, boolean cellHasFocus) {
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                        if (value instanceof Local) {
+                            Local ciudad = (Local) value;
+                            setText(ciudad.getCiudad());
+                        }
+                        return this;
+                    }
+                });
+                cmbCampus.setSelectedIndex(0);
+			} catch (SQLException e){
+				e.printStackTrace();
+			}
         cmbCampus.setBounds(116, 21, 164, 22);
         panel_campus.add(cmbCampus);
         
@@ -210,10 +239,35 @@ public class RegRecurso extends JDialog {
         lblNewLabel_2.setBounds(31, 25, 56, 16);
         panel_otro.add(lblNewLabel_2);
         
-        txt_tipo = new JTextField();
-        txt_tipo.setBounds(116, 21, 152, 22);
-        panel_otro.add(txt_tipo);
-        txt_tipo.setColumns(10);
+        TipoRecursoDAO trDAO = new TipoRecursoDAO();
+        try{
+            ArrayList<TipoRecurso> tipos = trDAO.getAll();
+            DefaultComboBoxModel<TipoRecurso> model = new DefaultComboBoxModel<>();
+            model.addElement(new TipoRecurso("0","<Seleccione>"));
+
+            for(TipoRecurso tipo : tipos){
+                model.addElement(tipo);
+            }
+
+            cbxTipo = new JComboBox<>(model);
+            cbxTipo.setRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                                  boolean isSelected, boolean cellHasFocus) {
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                        if (value instanceof TipoRecurso) {
+                            TipoRecurso tipo = (TipoRecurso) value;
+                            setText(tipo.getNombre());
+                        }
+                        return this;
+                    }
+                });
+                cbxTipo.setSelectedIndex(0);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        cbxTipo.setBounds(116, 21, 152, 22);
+        panel_otro.add(cbxTipo);
         
         JPanel buttonPane = new JPanel();
         buttonPane.setBackground(UIManager.getColor("InternalFrame.activeTitleGradient"));
@@ -227,34 +281,41 @@ public class RegRecurso extends JDialog {
         			if(!(txt_Nombre.getText().equals(""))) {
         				if(rdLocal.isSelected()) {
         					if(cmbCampus.getSelectedIndex() > 0) {
-        						Local localObj = new Local("L-" + GeneradorCodigos.generarCodigoUnico(5),
-                                        cmbCampus.getSelectedItem().toString());
+        						Local localObj = (Local)cmbCampus.getSelectedItem();
                                 Recurso localRecurso = new Recurso(txt_Id.getText().toString(),
                                         txt_Nombre.getText().toString(),
-                                        "Local",
+                                        null,
                                         true,
                                         localObj);
-                                GestionEvento.getInstance().insertarRecurso(localRecurso);
-        						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
-        								"Registro", JOptionPane.INFORMATION_MESSAGE);
-        						clean();
+                                try {
+                                    GestionEvento.getInstance().insertarRecurso(localRecurso);
+                                    JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente",
+                                            "Registro", JOptionPane.INFORMATION_MESSAGE);
+                                    clean();
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
         					} else {
         						JOptionPane.showMessageDialog(null, "Debe seleccionar un campus", 
         								"Error", JOptionPane.ERROR_MESSAGE);
         					}
         				} else {
-        					if(!(txt_tipo.getText().equals(""))) {
-        						Recurso otro = new Recurso(txt_Id.getText().toString(),
-        								txt_Nombre.getText().toString(), 
-        								txt_tipo.getText().toString(),
+        					if(cbxTipo.getSelectedIndex() > 0) {
+        						Recurso otro = new Recurso(txt_Id.getText(),
+        								txt_Nombre.getText(),
+                                        (TipoRecurso) cbxTipo.getSelectedItem(),
                                         true,
                                         null);
-        						GestionEvento.getInstance().insertarRecurso(otro);
-        						JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente", 
-        								"Registro", JOptionPane.INFORMATION_MESSAGE);
-        						clean();
+                                try {
+                                    GestionEvento.getInstance().insertarRecurso(otro);
+                                    JOptionPane.showMessageDialog(null, "Recurso registrado exitosamente",
+                                            "Registro", JOptionPane.INFORMATION_MESSAGE);
+                                    clean();
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
         					} else {
-        						JOptionPane.showMessageDialog(null, "Debe especificar el idTipo de recurso",
+        						JOptionPane.showMessageDialog(null, "Debe especificar el tipo de recurso",
         								"Error", JOptionPane.ERROR_MESSAGE);
         					}
         				}
@@ -264,16 +325,21 @@ public class RegRecurso extends JDialog {
         			}
         		}else {
         			String cod = txt_Id.getText().toString();
-        			Recurso recursoMod = GestionEvento.getInstance().buscarRecursoID(cod);
-        			recursoMod.setNombre(txt_Nombre.getText().toString());
-        			if(recursoMod.getIdTipo().equals("Local")) {
-                        recursoMod.getLocal().setCiudad(cmbCampus.getSelectedItem().toString());
-        			}else {
-        				recursoMod.setIdTipo(txt_tipo.getText().toString());
-        			}
-        			JOptionPane.showMessageDialog(null, "Modificaci�n exitosa.", 
-							"Modificaci�n", JOptionPane.INFORMATION_MESSAGE);
-        			dispose();
+                    Recurso recursoMod = null;
+                    try {
+                        recursoMod = GestionEvento.getInstance().buscarRecursoID(cod);
+                        recursoMod.setNombre(txt_Nombre.getText().toString());
+                        if(recursoMod.getLocal() != null) {
+                            recursoMod.setLocal((Local)cmbCampus.getSelectedItem());
+                        }else {
+                            recursoMod.setTipo((TipoRecurso) cbxTipo.getSelectedItem());
+                        }
+                        JOptionPane.showMessageDialog(null, "Modificaci�n exitosa.",
+                                "Modificación", JOptionPane.INFORMATION_MESSAGE);
+                        dispose();
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
         		}
         	}
         });
@@ -296,7 +362,7 @@ public class RegRecurso extends JDialog {
     private void clean() {
         txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(7));
         txt_Nombre.setText("");
-        txt_tipo.setText("");
+        cbxTipo.setSelectedIndex(0);
         rdLocal.setSelected(true);
         rdOtro.setSelected(false);
         panel_campus.setVisible(true);

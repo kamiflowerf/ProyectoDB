@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -13,10 +12,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-
 import logico.GestionEvento;
 import logico.Recurso;
-
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import java.awt.event.ActionListener;
@@ -25,11 +22,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.ListSelectionModel;
 import java.awt.Font;
+import java.sql.SQLException;
 
 public class ListRecurso extends JDialog {
 
-	private final JPanel contentPanel = new JPanel();
-	private JTable table;
+    private JTable table;
 	private int selectedRow = -1;
 	private DefaultTableModel modelo;
 	private Object row[];
@@ -58,7 +55,8 @@ public class ListRecurso extends JDialog {
         setIconImage(icon);
         setLocationRelativeTo(null);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleGradient"));
+        JPanel contentPanel = new JPanel();
+        contentPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleGradient"));
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BorderLayout(0, 0));
@@ -108,8 +106,13 @@ public class ListRecurso extends JDialog {
 						int selectedRow = table.getSelectedRow();
 				        if(selectedRow >= 0) {
 				            String codigo = (String)modelo.getValueAt(selectedRow, 0);
-				            Recurso recursoSeleccionado = GestionEvento.getInstance().buscarRecursoID(codigo);
-				            if(recursoSeleccionado != null) {
+                            Recurso recursoSeleccionado;
+                            try {
+                                recursoSeleccionado = GestionEvento.getInstance().buscarRecursoID(codigo);
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            if(recursoSeleccionado != null) {
 				                RegRecurso regRecursos = new RegRecurso(recursoSeleccionado);
 				                regRecursos.setModal(true);
 				                regRecursos.setVisible(true);
@@ -141,9 +144,18 @@ public class ListRecurso extends JDialog {
 				            
 				            if(option == JOptionPane.YES_OPTION) {
 				                String codigo = (String) modelo.getValueAt(selectedRow, 0);
-				                Recurso recursoSeleccionado = GestionEvento.getInstance().buscarRecursoID(codigo);
-				                GestionEvento.getInstance().eliminarRecurso(recursoSeleccionado);
-				                JOptionPane.showMessageDialog(null, 
+                                Recurso recursoSeleccionado;
+                                try {
+                                    recursoSeleccionado = GestionEvento.getInstance().buscarRecursoID(codigo);
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                try {
+                                    GestionEvento.getInstance().eliminarRecurso(recursoSeleccionado);
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                JOptionPane.showMessageDialog(null,
 						                "Eliminaci�n completada.",
 						                "Aviso", JOptionPane.ERROR_MESSAGE);
 				                btnModificar.setEnabled(false);
@@ -176,16 +188,24 @@ public class ListRecurso extends JDialog {
 	private void loadRecursos() {
 	    modelo.setRowCount(0);
 	    row = new Object[table.getColumnCount()];
-	    for (Recurso recurso : GestionEvento.getInstance().getMisRecursos()) {
-	        row[0] = recurso.getId();
-	        row[1] = recurso.getNombre();
-	        row[2] = recurso.getIdTipo();
-	        if("Local".equals(recurso.getIdTipo()) && recurso.getLocal() != null) {
-	            row[3] = recurso.getLocal().getCiudad();
-	        } else {
-	            row[3] = "N/A";
-	        }
-	        modelo.addRow(row);
-	    }
-	}
+        try {
+            for (Recurso recurso : GestionEvento.getInstance().getMisRecursos()) {
+                row[0] = recurso.getId();
+                row[1] = recurso.getNombre();
+                if(recurso.getTipo() != null) {
+					row[2] = recurso.getTipo().getNombre();
+				} else {
+					row[2] = "N/A";
+				}
+                if(recurso.getLocal() != null) {
+                    row[3] = recurso.getLocal().getCiudad();
+                } else {
+                    row[3] = "N/A";
+                }
+                modelo.addRow(row);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

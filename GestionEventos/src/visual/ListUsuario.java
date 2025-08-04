@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import javax.swing.UIManager;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -121,16 +122,25 @@ public class ListUsuario extends JDialog {
 					            }
 					            
 					            int option = JOptionPane.showConfirmDialog(null,
-					                "�Est� seguro que desea eliminar este usuario?",
-					                "Confirmaci�n", JOptionPane.YES_NO_OPTION);
+					                "¿Está seguro que desea eliminar este usuario?",
+					                "Confirmación", JOptionPane.YES_NO_OPTION);
 					            
 					            if(option == JOptionPane.YES_OPTION) {
-					                String username = (String) modelo.getValueAt(selectedRow, 1); 
-					                User usuarioSeleccionado = GestionEvento.getInstance().buscarUsuarioUsername(username);
-					                GestionEvento.getInstance().eliminarUser(usuarioSeleccionado);
-					                
-					                JOptionPane.showMessageDialog(null, 
-					                    "Eliminaci�n completada.",
+					                String username = (String) modelo.getValueAt(selectedRow, 1);
+                                    User usuarioSeleccionado = null;
+                                    try {
+                                        usuarioSeleccionado = GestionEvento.getInstance().buscarUsuarioUsername(username);
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    try {
+                                        GestionEvento.getInstance().eliminarUser(usuarioSeleccionado);
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+
+                                    JOptionPane.showMessageDialog(null,
+					                    "Eliminación completada.",
 					                    "Aviso", 
 					                    JOptionPane.INFORMATION_MESSAGE);
 					                
@@ -155,12 +165,16 @@ public class ListUsuario extends JDialog {
 	private void loadUsuarios() {
 		modelo.setRowCount(0);
 	    row = new Object[3];
-	    for (User usuario : GestionEvento.getInstance().getMisUsuarios()) {
-	        row[0] = usuario.getNombre()+ " " +usuario.getApellido();
-	        row[1] = usuario.getUserName();
-	        row[2] = usuario.getTipo();
-	        modelo.addRow(row);
-	    }
-		
-	}
+        try {
+            for (User usuario : GestionEvento.getInstance().getMisUsuarios()) {
+                row[0] = usuario.getNombre()+ " " +usuario.getApellido();
+                row[1] = usuario.getUserName();
+                row[2] = usuario.getTipo();
+                modelo.addRow(row);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }

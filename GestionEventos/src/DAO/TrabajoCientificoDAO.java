@@ -16,11 +16,11 @@ public class TrabajoCientificoDAO implements DAO<TrabajoCientifico>{
         Connection con = ConexionDB.getConnection();
         TrabajoCientifico tc = null;
 
-        String sql = "SELECT tc.idTrabajo, tc.nombre, a.idArea, a.nombreArea, par.idParticipante," +
-                "par.dni, p.nombre, p.apellido, p.telefono FROM TrabajoCientifico tc" +
-                "JOIN Area a ON a.idArea = tc.idArea" +
-                "JOIN Participante par ON par.idParticipante = tc.idParticipante" +
-                "JOIN Persona p ON p.dni = par.dni" +
+        String sql = "SELECT tc.idTrabajo, tc.nombre, a.idArea, a.nombreArea, par.idParticipante, " +
+                "par.dni, p.nombre, p.apellido, p.telefono FROM TrabajoCientifico tc " +
+                "JOIN Area a ON a.idArea = tc.idArea " +
+                "JOIN Participante par ON par.idParticipante = tc.idParticipante " +
+                "JOIN Persona p ON p.dni = par.dni " +
                 "WHERE tc.idTrabajo = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, Id);
@@ -46,17 +46,17 @@ public class TrabajoCientificoDAO implements DAO<TrabajoCientifico>{
     @Override
     public ArrayList<TrabajoCientifico> getAll() throws SQLException {
         Connection con = ConexionDB.getConnection();
-        ArrayList<TrabajoCientifico> lista = null;
-        String sql = "SELECT tc.idTrabajo, tc.nombre, a.idArea, a.nombreArea, par.idParticipante AS Autor," +
-                "par.dni, p.nombre, p.apellido, p.telefono FROM TrabajoCientifico tc" +
-                "JOIN Area a ON a.idArea = tc.idArea" +
-                "JOIN Participante par ON par.idParticipante = tc.idParticipante" +
-                "JOIN Persona p ON p.dni = par.dni";
+        ArrayList<TrabajoCientifico> lista = new ArrayList<>();
+        String sql = "SELECT tc.idTrabajo, tc.nombre, a.idArea, a.nombreArea, tc.idParticipante AS Autor, " +
+                "par.dni, p.nombre, p.apellido, p.telefono FROM TrabajoCientifico tc " +
+                "JOIN Area a ON a.idArea = tc.idArea " +
+                "JOIN Participante par ON par.idParticipante = tc.idParticipante " +
+                "JOIN Persona p ON p.dni = par.dni ";
         PreparedStatement ps = con.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while(rs.next()) {
             Area area = new AreaDAO().get(rs.getString("idArea"));
-            Participante participante = new ParticipanteDAO().get(rs.getString("idParticipante"));
+            Participante participante = new ParticipanteDAO().get(rs.getString("Autor"));
             TrabajoCientifico tc = new TrabajoCientifico(
                     rs.getString("idTrabajo"),
                     rs.getString("nombre"),
@@ -65,6 +65,9 @@ public class TrabajoCientificoDAO implements DAO<TrabajoCientifico>{
             );
             lista.add(tc);
         }
+        ConexionDB.closeResultSet(rs);
+        ConexionDB.closePreparedStatement(ps);
+        ConexionDB.closeConnection(con);
         return lista;
     }
 

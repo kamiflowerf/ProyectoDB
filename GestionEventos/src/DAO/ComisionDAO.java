@@ -10,11 +10,11 @@ public class ComisionDAO implements DAO<Comision>{
     public Comision get(String Id) throws SQLException {
         Connection con = ConexionDB.getConnection();
         Comision comision = null;
-        String sql = "SELECT c.codComision, c.nombre, a.idArea, a.nombreArea, e.nombre AS Evento FROM Comision c" +
-                "JOIN Area a ON a.idArea = c.idArea" +
-                "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision" +
-                "JOIN Evento e ON e.idEvento = ec.idEvento" +
-                "WHERE id = ?";
+        String sql = "SELECT c.codComision, c.nombre AS nameCom, a.idArea, a.nombreArea, e.titulo FROM Comision c " +
+                "JOIN Area a ON a.idArea = c.idArea " +
+                "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision " +
+                "JOIN Evento e ON e.idEvento = ec.idEvento " +
+                "WHERE codComision = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, Id);
         ResultSet rs = ps.executeQuery();
@@ -22,7 +22,7 @@ public class ComisionDAO implements DAO<Comision>{
         if(rs.next()) {
             Area area = new AreaDAO().get(rs.getString("idArea"));
             comision = new Comision(Id,
-                    rs.getString("nombre"),
+                    rs.getString("nameCom"),
                     area
                     );
 
@@ -49,9 +49,9 @@ public class ComisionDAO implements DAO<Comision>{
 
         try {
             con = ConexionDB.getConnection();
-            String sql = "SELECT c.codComision, c.nombre, a.idArea,a.nombreArea, e.nombre AS Evento FROM Comision c" +
-                                    "JOIN Area a ON a.idArea = c.idArea" +
-                                    "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision" +
+            String sql = "SELECT c.codComision, c.nombre AS nameCom, a.idArea,a.nombreArea, e.titulo FROM Comision c " +
+                                    "JOIN Area a ON a.idArea = c.idArea " +
+                                    "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision " +
                                     "JOIN Evento e ON e.idEvento = ec.idEvento";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -61,10 +61,10 @@ public class ComisionDAO implements DAO<Comision>{
 
             while (rs.next()) {
                 Area area = new AreaDAO().get(rs.getString("idArea"));
-                String idComision = rs.getString("idComision");
+                String idComision = rs.getString("codComision");
                 Comision comision = new Comision(
                         idComision,
-                        rs.getString("nombre"),
+                        rs.getString("nameCom"),
                         area
                 );
                 // Obtener jurados

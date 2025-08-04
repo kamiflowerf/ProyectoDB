@@ -1,42 +1,22 @@
 package visual;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.awt.*;
+import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
+import DAO.TipoEventoDAO;
 import logico.*;
-
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerDateModel;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ScrollPaneConstants;
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.ListSelectionModel;
-import java.awt.Font;
 
 public class PlanificarEvento extends JDialog {
 
@@ -59,7 +39,7 @@ public class PlanificarEvento extends JDialog {
 	private Recurso selectedRecurso = null;
 	private JTextField txtCodigo;
 	private JTextField txtTitulo;
-	private JComboBox cmbTipo;
+	private JComboBox<TipoEvento> cmbTipo;
 	private JTable tableComision;
 	private JTable tableComisionS;
 	private JButton btnQuitRecurso;
@@ -112,7 +92,7 @@ public class PlanificarEvento extends JDialog {
 			panel.add(panel_1);
 			panel_1.setLayout(null);
 			
-			JLabel lblNewLabel = new JLabel("C\u00F3digo:");
+			JLabel lblNewLabel = new JLabel("Código:");
 			lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel.setBounds(23, 33, 63, 14);
 			panel_1.add(lblNewLabel);
@@ -124,7 +104,7 @@ public class PlanificarEvento extends JDialog {
 			panel_1.add(txtCodigo);
 			txtCodigo.setColumns(10);
 			
-			JLabel lblNewLabel_1 = new JLabel("T\u00EDtulo:");
+			JLabel lblNewLabel_1 = new JLabel("Título:");
 			lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_1.setBounds(23, 76, 46, 14);
 			panel_1.add(lblNewLabel_1);
@@ -139,8 +119,32 @@ public class PlanificarEvento extends JDialog {
 			lblNewLabel_2.setBounds(433, 33, 46, 14);
 			panel_1.add(lblNewLabel_2);
 			
-			cmbTipo = new JComboBox();
-			cmbTipo.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Conferencia", "Panel", "Ponencia", "Poster", "Mesa Reonda"}));
+			TipoEventoDAO teDAO = new TipoEventoDAO();
+			try{
+				ArrayList<TipoEvento> tipos = teDAO.getAll();
+				DefaultComboBoxModel<TipoEvento> model = new DefaultComboBoxModel<>();
+				model.addElement(new TipoEvento("0","<Seleccione>"));
+
+				for(TipoEvento tipo : tipos){
+					model.addElement(tipo);
+				}
+				cmbTipo = new JComboBox<>(model);
+				cmbTipo.setRenderer(new DefaultListCellRenderer() {
+						@Override
+						public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+																	  boolean isSelected, boolean cellHasFocus) {
+							super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+							if (value instanceof TipoEvento) {
+								TipoEvento tipo = (TipoEvento) value;
+								setText(tipo.getNombre());
+							}
+							return this;
+						}
+					});
+				cmbTipo.setSelectedIndex(0);
+			} catch (SQLException e){
+				e.printStackTrace();
+			}
 			cmbTipo.setBounds(489, 30, 139, 20);
 			panel_1.add(cmbTipo);
 			
@@ -178,8 +182,12 @@ public class PlanificarEvento extends JDialog {
 					indexC = tableComision.getSelectedRow();
 					if(indexC >=  0) {
 						String cod = (String) tableComision.getValueAt(indexC, 0);
-						selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
-						if(selectedComision != null) {
+                        try {
+                            selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedComision != null) {
 							btnAddComision.setEnabled(true);
 							btnQuitComision.setEnabled(false);
 						}
@@ -198,7 +206,7 @@ public class PlanificarEvento extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if(existeJurados(selectedComision)) {
 						JOptionPane.showMessageDialog(null, 
-								"Esta comisi�n tiene jurados en com�n con otra ya seleccionada.",
+								"Esta comisión tiene jurados en común con otra ya seleccionada.",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					}else {
 						selectedComision.setSelected(true);
@@ -246,12 +254,15 @@ public class PlanificarEvento extends JDialog {
 					indexCS = tableComisionS.getSelectedRow();
 					if(indexCS >=  0) {
 						String cod = (String) tableComisionS.getValueAt(indexCS, 0);
-						selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
-						if(selectedComision != null) {
-							btnAddComision.setEnabled(false);
-							btnQuitComision.setEnabled(true);
-						}
-
+                        try {
+                            selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
+							if(selectedComision != null) {
+								btnAddComision.setEnabled(false);
+								btnQuitComision.setEnabled(true);
+							}
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
 					}
 				}
 			});
@@ -279,12 +290,15 @@ public class PlanificarEvento extends JDialog {
 					indexR = tableRecurso.getSelectedRow();
 					if(indexR >=  0) {
 						String cod = (String) tableRecurso.getValueAt(indexR, 0);
-						selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
-						if(selectedRecurso != null) {
-							btnAddRecurso.setEnabled(true);
-							btnQuitRecurso.setEnabled(false);
-						}
-
+                        try {
+                            selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
+							if(selectedRecurso != null) {
+								btnAddRecurso.setEnabled(true);
+								btnQuitRecurso.setEnabled(false);
+							}
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
 					}
 				}
 			});
@@ -297,10 +311,10 @@ public class PlanificarEvento extends JDialog {
 			btnAddRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnAddRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(!(tieneLocal) && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
+					if(!(tieneLocal) && (selectedRecurso.getTipo().toString().equals("Local"))) {
 						selectedRecurso.setSelected(true);
 						tieneLocal = true;
-					}else if(tieneLocal && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
+					}else if(tieneLocal && (selectedRecurso.getTipo().toString().equals("Local"))) {
 						JOptionPane.showMessageDialog(null, 
 				                "Solo se puede seleccionar un local.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
@@ -321,7 +335,7 @@ public class PlanificarEvento extends JDialog {
 			btnQuitRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnQuitRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(selectedRecurso.getIdTipo().toString().equals("Local")) {
+					if(selectedRecurso.getTipo().toString().equals("Local")) {
 						tieneLocal = false;
 					}
 					selectedRecurso.setSelected(false);
@@ -354,8 +368,12 @@ public class PlanificarEvento extends JDialog {
 					indexRS = tableRecursoS.getSelectedRow();
 					if(indexRS >=  0) {
 						String cod = (String) tableRecursoS.getValueAt(indexRS, 0);
-						selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
-						if(selectedRecurso != null) {
+                        try {
+                            selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedRecurso != null) {
 							btnAddRecurso.setEnabled(false);
 							btnQuitRecurso.setEnabled(true);
 						}
@@ -377,7 +395,7 @@ public class PlanificarEvento extends JDialog {
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						if(txtTitulo.getText().toString().equals("") || cmbTipo.getSelectedIndex() == 0) {
+						if(txtTitulo.getText().isEmpty() || cmbTipo.getSelectedIndex() == 0) {
 							JOptionPane.showMessageDialog(null, 
 					                "Debe llenar todos los datos generales.",
 					                "Error", JOptionPane.ERROR_MESSAGE);
@@ -385,40 +403,60 @@ public class PlanificarEvento extends JDialog {
 							Date fecha = (Date) spnFecha.getValue();
 							int cantRecurSel = 0;
 							int cantComiSel = 0;
-							for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-								if(obj.getSelected()) {
-									cantRecurSel++;
-								}
-							}
-							for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-								if(obj.getSelected()) {
-									cantComiSel++;
-								}
-							}
-							if(cantRecurSel == 0 || cantComiSel == 0) {
+                            try {
+                                for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
+                                    if(obj.getSelected()) {
+                                        cantRecurSel++;
+                                    }
+                                }
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            try {
+                                for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
+                                    if(obj.getSelected()) {
+                                        cantComiSel++;
+                                    }
+                                }
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            if(cantRecurSel == 0 || cantComiSel == 0) {
 								JOptionPane.showMessageDialog(null, 
-										"Debe seleccionar al menos una comisi�n y un recurso.",
+										"Debe seleccionar al menos una comisión y un recurso.",
 										"Error", JOptionPane.ERROR_MESSAGE);
 							}else {
 								if(tieneLocal) {
-									Evento evento = new Evento(txtCodigo.getText().toString(), txtTitulo.getText().toString(), cmbTipo.getSelectedItem().toString(), fecha);
-									for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-										if(obj.getSelected()) {
-											evento.getRecursos().add(obj);
-											obj.setSelected(false);
-										}
-									}
-									for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-										if(obj.getSelected()) {
-											evento.getComisiones().add(obj);
-											obj.setSelected(false);
-										}
-									}
-									GestionEvento.getInstance().insertarEvento(evento);
-									JOptionPane.showMessageDialog(null, 
-											"Planificaci�n exitosa.",
-											"Aviso", JOptionPane.WARNING_MESSAGE);
-									clean();
+									Evento evento = new Evento(txtCodigo.getText(), txtTitulo.getText(), (TipoEvento) cmbTipo.getSelectedItem(), fecha);
+                                    try {
+                                        for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
+                                            if(obj.getSelected()) {
+                                                evento.getRecursos().add(obj);
+                                                obj.setSelected(false);
+                                            }
+                                        }
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    try {
+                                        for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
+                                            if(obj.getSelected()) {
+                                                evento.getComisiones().add(obj);
+                                                obj.setSelected(false);
+                                            }
+                                        }
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    try {
+                                        GestionEvento.getInstance().insertarEvento(evento);
+										JOptionPane.showMessageDialog(null,
+												"Planificación exitosa.",
+												"Aviso", JOptionPane.WARNING_MESSAGE);
+										clean();
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
 								}else {
 									JOptionPane.showMessageDialog(null, 
 							                "Su evento debe tener un local.",
@@ -452,77 +490,101 @@ public class PlanificarEvento extends JDialog {
 
 	private void loadRecursosSelect() {
 		modeloRecursoSelected.setRowCount(0);
-		ArrayList<Recurso> aux = GestionEvento.getInstance().getMisRecursos();
-		rowRecursoSelected = new Object[tableRecursoS.getColumnCount()];
-		for (Recurso obj : aux) {
-			if(obj.getDisponibilidad()) {
-				if(obj.getSelected()) {
-					rowRecursoSelected[0] = obj.getId();
-					rowRecursoSelected[1] = obj.getNombre();
-					rowRecursoSelected[2] = obj.getIdTipo();
-					modeloRecursoSelected.addRow(rowRecursoSelected);
+        ArrayList<Recurso> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisRecursos();
+			rowRecursoSelected = new Object[tableRecursoS.getColumnCount()];
+			for (Recurso obj : aux) {
+				if(obj.getDisponibilidad()) {
+					if(obj.getSelected()) {
+						rowRecursoSelected[0] = obj.getId();
+						rowRecursoSelected[1] = obj.getNombre();
+						rowRecursoSelected[2] = obj.getTipo().getNombre();
+						modeloRecursoSelected.addRow(rowRecursoSelected);
+					}
 				}
 			}
-		}
+		} catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	private void loadRecursos() {
 		modeloRecurso.setRowCount(0);
-		ArrayList<Recurso> aux = GestionEvento.getInstance().getMisRecursos();
-		rowRecurso = new Object[tableRecurso.getColumnCount()];
-		for (Recurso obj : aux) {
-			if(obj.getDisponibilidad()) {
-				if(!(obj.getSelected())) {
-					rowRecurso[0] = obj.getId();
-					rowRecurso[1] = obj.getNombre();
-					rowRecurso[2] = obj.getIdTipo();
-					modeloRecurso.addRow(rowRecurso);
+        ArrayList<Recurso> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisRecursos();
+			rowRecurso = new Object[tableRecurso.getColumnCount()];
+			for (Recurso obj : aux) {
+				if(obj.getDisponibilidad()) {
+					if(!(obj.getSelected())) {
+						rowRecurso[0] = obj.getId();
+						rowRecurso[1] = obj.getNombre();
+						rowRecurso[2] = obj.getTipo().getNombre();
+						modeloRecurso.addRow(rowRecurso);
+					}
 				}
 			}
-		}	
+		} catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	private void loadComisionesSelect() {
 		modeloComisionSelected.setRowCount(0);
-		ArrayList<Comision> aux = GestionEvento.getInstance().getMisComisiones();
-		rowComisionSelected = new Object[tableComisionS.getColumnCount()];
-		for (Comision obj : aux) {
-			if(obj.getSelected()){
-				rowComisionSelected[0] = obj.getCodComision();
-				rowComisionSelected[1] = obj.getNombre();
-				rowComisionSelected[2] = obj.getArea();
-				modeloComisionSelected.addRow(rowComisionSelected);
+        ArrayList<Comision> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisComisiones();
+			rowComisionSelected = new Object[tableComisionS.getColumnCount()];
+			for (Comision obj : aux) {
+				if(obj.getSelected()){
+					rowComisionSelected[0] = obj.getCodComision();
+					rowComisionSelected[1] = obj.getNombre();
+					rowComisionSelected[2] = obj.getArea().getNombre();
+					modeloComisionSelected.addRow(rowComisionSelected);
+				}
 			}
-		}	
+		} catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	private void loadComisiones() {
 		modeloComision.setRowCount(0);
-		ArrayList<Comision> aux = GestionEvento.getInstance().getMisComisiones();
-		rowComision = new Object[tableComision.getColumnCount()];
-		for (Comision obj : aux) {
-			if(!(obj.getSelected())){
-				rowComision[0] = obj.getCodComision();
-				rowComision[1] = obj.getNombre();
-				rowComision[2] = obj.getArea();
-				modeloComision.addRow(rowComision);
+        ArrayList<Comision> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisComisiones();
+			rowComision = new Object[tableComision.getColumnCount()];
+			for (Comision obj : aux) {
+				if(!(obj.getSelected())){
+					rowComision[0] = obj.getCodComision();
+					rowComision[1] = obj.getNombre();
+					rowComision[2] = obj.getArea().getNombre();
+					modeloComision.addRow(rowComision);
+				}
 			}
-		}
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	private Boolean existeJurados(Comision obj) {
-		for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
-			if(comision.getSelected()) {
-				for (Jurado jurado : comision.getJurado()) {
-					for (Jurado jurado2 : obj.getJurado()) {
-						if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
+        try {
+            for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
+                if(comision.getSelected()) {
+                    for (Jurado jurado : comision.getJurado()) {
+                        for (Jurado jurado2 : obj.getJurado()) {
+                            if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
 	}
 	
 	private void clean() {

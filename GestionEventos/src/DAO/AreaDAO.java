@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AreaDAO implements DAO<Area> {
     @Override
@@ -51,6 +52,21 @@ public class AreaDAO implements DAO<Area> {
         return lista;
     }
 
+    public List<String> getAllNames() throws SQLException{
+        Connection con = ConexionDB.getConnection();
+        List<String> nombres =  new ArrayList<>();
+
+        String sql = "SELECT nombreArea FROM Area";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            nombres.add(rs.getString("nombreArea"));
+        }
+        ConexionDB.closeResultSet(rs);
+        ConexionDB.closePreparedStatement(ps);
+        ConexionDB.closeConnection(con);
+        return nombres;
+    }
 
     @Override
     public boolean insert(Area area) throws SQLException {

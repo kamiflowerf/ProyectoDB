@@ -3,35 +3,23 @@ package visual;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.SoftBevelBorder;
-import javax.swing.border.BevelBorder;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.Color;
-import javax.swing.border.TitledBorder;
 import javax.swing.UIManager;
-import javax.swing.JTextField;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import logico.Evento;
 import logico.GestionEvento;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.sql.SQLException;
 import java.util.Date;
 import java.awt.event.ActionEvent;
-import java.awt.SystemColor;
 import javax.swing.ImageIcon;
 
 public class PrincipalGestion extends JFrame {
@@ -60,30 +48,12 @@ public class PrincipalGestion extends JFrame {
 	 * Create the frame.
 	 */
 	public PrincipalGestion() {
-
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				FileOutputStream gestion;
-				ObjectOutputStream gestionWrite;
-				try {
-					gestion = new FileOutputStream("archivo.dat");
-					gestionWrite = new ObjectOutputStream(gestion);
-					gestionWrite.writeObject(GestionEvento.getInstance());
-				}catch(FileNotFoundException el) {
-					
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
 		
 		Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
 		
 		setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
-		setTitle("Gesti\u00F3n de Eventos PUCMM");
+		setTitle("Gestión de Eventos PUCMM");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		dim = getToolkit().getScreenSize();
 		setBounds(100, 100, 450, 300);
@@ -112,7 +82,7 @@ public class PrincipalGestion extends JFrame {
 		});
 		mnNewMenu.add(mntmNewMenuItem);
 		
-		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Trabajo Cient\u00EDfico");
+		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Trabajo Científico");
 		mntmNewMenuItem_1.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		mntmNewMenuItem_1.setIcon(new ImageIcon(PrincipalGestion.class.getResource("/visual/trabajo2 (1).png")));
 		mntmNewMenuItem_1.addActionListener(e ->{
@@ -122,7 +92,7 @@ public class PrincipalGestion extends JFrame {
 		});
 		mnNewMenu.add(mntmNewMenuItem_1);
 		
-		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Comisi\u00F3n");
+		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Comisión");
 		mntmNewMenuItem_2.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		mntmNewMenuItem_2.setIcon(new ImageIcon(PrincipalGestion.class.getResource("/visual/comision (1).png")));
 		mntmNewMenuItem_2.addActionListener(new ActionListener() {
@@ -172,7 +142,7 @@ public class PrincipalGestion extends JFrame {
 		});
 		mnNewMenu_2.add(mntmNewMenuItem_6);
 		
-		JMenuItem mntmNewMenuItem_7 = new JMenuItem("Trabajos Cient\u00EDficos");
+		JMenuItem mntmNewMenuItem_7 = new JMenuItem("Trabajos Científicos");
 		mntmNewMenuItem_7.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		mntmNewMenuItem_7.setIcon(new ImageIcon(PrincipalGestion.class.getResource("/visual/trabajo2 (1).png")));
 		mntmNewMenuItem_7.addActionListener(e -> {
@@ -189,12 +159,16 @@ public class PrincipalGestion extends JFrame {
 		mntmNewMenuItem_8.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Date fechaActual = new Date();
-		        for (Evento obj : GestionEvento.getInstance().getMisEventos()) {
-					if(obj.getFecha().before(fechaActual)) {
-						obj.setEstado(false);
-					}
-				}
-				ListEvento dialog = new ListEvento();
+                try {
+                    for (Evento obj : GestionEvento.getInstance().getMisEventos()) {
+                        if(obj.getFecha().before(fechaActual)) {
+                            obj.setEstado(false);
+                        }
+                    }
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                ListEvento dialog = new ListEvento();
 				dialog.setModal(true);
 				dialog.setVisible(true);
 			}
@@ -229,15 +203,19 @@ public class PrincipalGestion extends JFrame {
 		});
 		mnNewMenu_1.add(mntmNewMenuItem_4);
 		
-		mnNewMenu_3 = new JMenu("Administraci\u00F3n");
+		mnNewMenu_3 = new JMenu("Administración");
 		mnNewMenu_3.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		menuBar.add(mnNewMenu_3);
-		
-		if(!(GestionEvento.getInstance().getCurrentUser().getTipo().equals("Administrador"))) {
-			mnNewMenu_3.setEnabled(false);
-		}
 
-		JMenuItem mntmNewMenuItem_10 = new JMenuItem("Registrar Usuario");
+        try {
+            if(!(GestionEvento.getInstance().getCurrentUser().getTipo().equals("Administrador"))) {
+                mnNewMenu_3.setEnabled(false);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        JMenuItem mntmNewMenuItem_10 = new JMenuItem("Registrar Usuario");
 		mntmNewMenuItem_10.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				RegUsuario dialog = new RegUsuario();

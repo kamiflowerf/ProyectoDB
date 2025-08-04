@@ -1,5 +1,6 @@
 package DAO;
 
+import logico.Seguridad;
 import logico.User;
 
 import java.sql.Connection;
@@ -93,5 +94,31 @@ public class UserDAO implements DAO<User> {
         ConexionDB.closePreparedStatement(ps);
         ConexionDB.closeConnection(con);
         return result > 0;
+    }
+
+    public User autenticarUsuario(String usuario, String contrasenaPlano) {
+        String hash = Seguridad.sha256(contrasenaPlano); // hasheamos antes
+        String sql = "SELECT * FROM Usuario WHERE nombreUsuario = ? AND contrasena = ?";
+
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, usuario);
+            stmt.setString(2, hash); // comparamos contra el hash
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()) {
+                return new User(
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("nombreUsuario"),
+                        rs.getString("contrasena"), // ← hash
+                        rs.getString("tipo")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

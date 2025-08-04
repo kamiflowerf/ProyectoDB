@@ -3,9 +3,13 @@ package visual;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+
+import DAO.AreaDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class RegTrabajo extends JDialog {
     private final JPanel contentPanel = new JPanel();
@@ -18,7 +22,7 @@ public class RegTrabajo extends JDialog {
     private JTextField txtNombreAutor;
     private JTextField txtApellidosAutor;
     private JTextField txtTelefonoAutor;
-    private JComboBox cmbArea;
+    private JComboBox<Area> cbxArea;
 
     public static void main(String[] args) {
         try {
@@ -31,7 +35,7 @@ public class RegTrabajo extends JDialog {
     }
 
     public RegTrabajo() {
-        setTitle("Registrar Trabajo Cient�fico");
+        setTitle("Registrar Trabajo Científico");
         
         Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
@@ -88,16 +92,39 @@ public class RegTrabajo extends JDialog {
         panel_1.add(txtNombre);
 
         // �rea
-        JLabel lblArea = new JLabel("�rea:");
+        JLabel lblArea = new JLabel("Área:");
         lblArea.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblArea.setForeground(UIManager.getColor("FormattedTextField.foreground"));
         lblArea.setBounds(23, 116, 56, 16);
         panel_1.add(lblArea);
-        
-        cmbArea = new JComboBox();
-        cmbArea.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Tecnolog\u00EDa en inform\u00E1tica ", "Ciencias de la salud", "Ciencias Sociales", "Investigaci\u00F3n\u00A0y\u00A0Desarrollo"}));
-        cmbArea.setBounds(104, 115, 179, 20);
-        panel_1.add(cmbArea);
+
+        AreaDAO areaDAO = new AreaDAO();
+        try{
+            ArrayList<Area> areas = areaDAO.getAll();
+            DefaultComboBoxModel<Area> model = new DefaultComboBoxModel<>();
+            model.addElement(new Area("0","<Seleccione>"));
+
+            for(Area area : areas){
+                model.addElement(area);
+            }
+
+            cbxArea = new JComboBox<>(model);
+            cbxArea.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                              boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (value instanceof Area) {
+                        Area area = (Area) value;
+                        setText(area.getNombre());
+                    }
+                    return this;
+                }
+            });
+            cbxArea.setSelectedIndex(0);
+        } catch (SQLException e){ e.printStackTrace(); }
+        cbxArea.setBounds(104, 115, 179, 20);
+        panel_1.add(cbxArea);
 
         // Panel Datos del Autor
         panelAutor = new JPanel();
@@ -161,23 +188,27 @@ public class RegTrabajo extends JDialog {
         btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 13));
         btnNewButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		participante = GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText().toString());
-        		if(participante != null) {
-        			if(participante instanceof Participante) {
-        				existe = true;
-        				txtNombreAutor.setText(participante.getNombre());
-        				txtApellidosAutor.setText(participante.getApellidos());
-        				txtTelefonoAutor.setText(participante.getTelefono());
-        				txtNombreAutor.setEditable(false);
-        				txtApellidosAutor.setEditable(false);
-        				txtTelefonoAutor.setEditable(false);
-        			}
-        		}else {
-        			existe = false;
-        			txtNombreAutor.setEditable(true);
-        			txtApellidosAutor.setEditable(true);
-        			txtTelefonoAutor.setEditable(true);
-        		}
+                try {
+                    participante = GestionEvento.getInstance().buscarPersonasCedula(txtCedulaAutor.getText());
+                    if(participante != null) {
+                        if(participante instanceof Participante) {
+                            existe = true;
+                            txtNombreAutor.setText(participante.getNombre());
+                            txtApellidosAutor.setText(participante.getApellidos());
+                            txtTelefonoAutor.setText(participante.getTelefono());
+                            txtNombreAutor.setEditable(false);
+                            txtApellidosAutor.setEditable(false);
+                            txtTelefonoAutor.setEditable(false);
+                        }
+                    }else {
+                        existe = false;
+                        txtNombreAutor.setEditable(true);
+                        txtApellidosAutor.setEditable(true);
+                        txtTelefonoAutor.setEditable(true);
+                    }
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
         	}
         });
         btnNewButton.setBounds(345, 37, 89, 23);
@@ -193,34 +224,42 @@ public class RegTrabajo extends JDialog {
         okButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		if(existe) {
-        			if(txtNombre.getText().toString().equals("") || cmbArea.getSelectedIndex() == 0) {
+        			if(txtNombre.getText().toString().isEmpty() || cbxArea.getSelectedIndex() == 0) {
         				JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
                                 "Error", JOptionPane.ERROR_MESSAGE);
         			}else {
-                        //                                                                                     PATCH TEMPORAL: AREA NULA PARA PODER SUBIR A GIT
-        				TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), null, (Participante) participante);
-        				GestionEvento.getInstance().insertarTrabajo(trabajo);
-        				JOptionPane.showMessageDialog(null, "Registro exitoso.", 
+                        Area area = (Area) cbxArea.getSelectedItem();
+        				TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), area, (Participante) participante);
+                        try {
+                            GestionEvento.getInstance().insertarTrabajo(trabajo);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        JOptionPane.showMessageDialog(null, "Registro exitoso.",
                                 "Aviso", JOptionPane.WARNING_MESSAGE);
         				clean();
         			}
         		}else {
-        			if(txtNombre.getText().toString().equals("") || cmbArea.getSelectedIndex() == 0) {
+        			if(txtNombre.getText().toString().isEmpty() || cbxArea.getSelectedIndex() == 0) {
         				JOptionPane.showMessageDialog(null, "Debe llenar todos los campos generales.", 
         						"Error", JOptionPane.WARNING_MESSAGE);
         			}else {
-        				if(txtCedulaAutor.getText().toString().equals("") || txtNombreAutor.getText().toString().equals("") || txtApellidosAutor.getText().toString().equals("") || txtTelefonoAutor.getText().toString().equals("")) {
+        				if(txtCedulaAutor.getText().toString().isEmpty() || txtNombreAutor.getText().toString().isEmpty() || txtApellidosAutor.getText().toString().isEmpty() || txtTelefonoAutor.getText().toString().isEmpty()) {
         					JOptionPane.showMessageDialog(null, "Debe llenar todos los datos del autor.", 
                                     "Error", JOptionPane.ERROR_MESSAGE);
         				}else {
         					Participante participante = new Participante("P-"+GeneradorCodigos.generarCodigoUnico(5), txtCedulaAutor.getText().toString(), txtNombreAutor.getText().toString(), txtApellidosAutor.getText().toString(), txtTelefonoAutor.getText().toString());
-        					// PATCH TEMPORAL
-                            TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), null, participante);
-        					GestionEvento.getInstance().insertarPersonas(participante);
-        					GestionEvento.getInstance().insertarTrabajo(trabajo);
-        					JOptionPane.showMessageDialog(null, "Registro exitoso.", 
-        							"Aviso", JOptionPane.WARNING_MESSAGE);
-        					clean();
+        					Area area = (Area) cbxArea.getSelectedItem();
+                            TrabajoCientifico trabajo = new TrabajoCientifico(txtId.getText().toString(), txtNombre.getText().toString(), area, participante);
+                            try {
+                                GestionEvento.getInstance().insertarPersonas(participante);
+                                GestionEvento.getInstance().insertarTrabajo(trabajo);
+                                JOptionPane.showMessageDialog(null, "Registro exitoso.",
+                                        "Aviso", JOptionPane.WARNING_MESSAGE);
+                                clean();
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
         				}
         			}
         		}
@@ -243,7 +282,7 @@ public class RegTrabajo extends JDialog {
     private void clean() {
         txtId.setText("T-" + GeneradorCodigos.generarCodigoUnico(5));
         txtNombre.setText("");
-        cmbArea.setSelectedIndex(0);
+        cbxArea.setSelectedIndex(0);
         txtCedulaAutor.setText("");
         txtNombreAutor.setText("");
         txtNombreAutor.setEditable(false);

@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -12,10 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-
 import logico.GestionEvento;
 import logico.User;
-
 import java.awt.Color;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,10 +21,8 @@ import java.awt.Font;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionListener;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class RegUsuario extends JDialog {
 
@@ -37,7 +32,7 @@ public class RegUsuario extends JDialog {
 	private JTextField textField_2;
 	private JTextField textField_3;
 	private JTextField textField_4;
-	private JComboBox comboBox;
+	private JComboBox<String> comboBox;
 	
 
 	/**
@@ -101,7 +96,7 @@ public class RegUsuario extends JDialog {
 			panel_1.add(textField);
 			textField.setColumns(10);
 			
-			JLabel lblNewLabel_1 = new JLabel("Contrase\u00F1a:");
+			JLabel lblNewLabel_1 = new JLabel("Contraseña:");
 			lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_1.setBounds(172, 29, 85, 14);
 			panel_1.add(lblNewLabel_1);
@@ -111,7 +106,7 @@ public class RegUsuario extends JDialog {
 			panel_1.add(textField_1);
 			textField_1.setColumns(10);
 			
-			JLabel lblNewLabel_2 = new JLabel("Confirmar contrase\u00F1a:");
+			JLabel lblNewLabel_2 = new JLabel("Confirmar contraseña:");
 			lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_2.setBounds(172, 85, 150, 14);
 			panel_1.add(lblNewLabel_2);
@@ -146,8 +141,8 @@ public class RegUsuario extends JDialog {
 			lblNewLabel_5.setBounds(172, 141, 46, 14);
 			panel_1.add(lblNewLabel_5);
 			
-			comboBox = new JComboBox();
-			comboBox.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Administrador", "Comercial"}));
+			comboBox = new JComboBox<>();
+			comboBox.setModel(new DefaultComboBoxModel<>(new String[] {"<Seleccione>", "Administrador", "Comercial"}));
 			comboBox.setBounds(172, 166, 113, 20);
 			panel_1.add(comboBox);
 		}
@@ -173,19 +168,23 @@ public class RegUsuario extends JDialog {
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				            return;
 				        }
-				
-				        
-				        if(GestionEvento.getInstance().existeUserName(userName)) {
+
+
+                        try {
+                            if(GestionEvento.getInstance().existeUserName(userName)) {
+                                JOptionPane.showMessageDialog(null,
+                                    "El nombre de usuario ya está en uso. Por favor, elija otro.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                                textField_4.setText("");
+                                return;
+                            }
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        if(!password.equals(confirmPass)) {
 				            JOptionPane.showMessageDialog(null, 
-				                "El nombre de usuario ya est� en uso. Por favor, elija otro.", 
-				                "Error", JOptionPane.ERROR_MESSAGE);
-				            textField_4.setText("");
-				            return;
-				        }
-				        
-				        if(!password.equals(confirmPass)) {
-				            JOptionPane.showMessageDialog(null, 
-				                "Las contrase�as no coinciden", 
+				                "Las contraseñas no coinciden",
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				            textField_1.setText("");
 				            textField_2.setText("");
@@ -193,11 +192,14 @@ public class RegUsuario extends JDialog {
 				        }
 				        
 				        User nuevoUsuario = new User(nombre, apellido, userName, password, tipo);
-				        GestionEvento.getInstance().getMisUsuarios().add(nuevoUsuario);
-				        
-				        JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente", 
-				            "Registro exitoso", JOptionPane.INFORMATION_MESSAGE);
-				        clean();
+                        try {
+                            GestionEvento.getInstance().insertarUser(nuevoUsuario);
+							JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente",
+									"Registro exitoso", JOptionPane.INFORMATION_MESSAGE);
+							clean();
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
 					}
 				});
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));

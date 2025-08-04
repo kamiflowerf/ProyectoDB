@@ -12,17 +12,17 @@ public class Evento implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
 	private String titulo;
-	private String idTipo;
+	private TipoEvento tipo;
 	private Date fecha;
 	private Boolean estado;
 	private ArrayList<Comision> comisiones;
 	private ArrayList<Recurso> recursos;
 	
-	public Evento(String id, String titulo, String idTipo, Date fecha) {
+	public Evento(String id, String titulo, TipoEvento tipo, Date fecha) {
 		super();
 		this.id = id;
 		this.titulo = titulo;
-		this.idTipo = idTipo;
+		this.tipo = tipo;
 		this.fecha = fecha;
 		comisiones = new ArrayList<>();
 		recursos = new ArrayList<>();
@@ -41,11 +41,11 @@ public class Evento implements Serializable {
 	public void setTitulo(String titulo) {
 		this.titulo = titulo;
 	}
-	public String getIdTipo() {
-		return idTipo;
+	public TipoEvento getTipo() {
+		return tipo;
 	}
-	public void setIdTipo(String idTipo) {
-		this.idTipo = idTipo;
+	public void setTipo(TipoEvento tipo) {
+		this.tipo = tipo;
 	}
 	public Date getFecha() {
 		return fecha;

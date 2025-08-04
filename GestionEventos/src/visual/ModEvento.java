@@ -1,52 +1,27 @@
 package visual;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SpinnerDateModel;
-import javax.swing.UIManager;
+import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import logico.Comision;
-import logico.Evento;
-import logico.GestionEvento;
-import logico.Jurado;
-import logico.Recurso;
+import DAO.*;
+import logico.*;
 
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.SQLException;
+import java.util.*;
 import java.awt.event.ActionEvent;
-import java.awt.Font;
 
 public class ModEvento extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	private String[] headersComision = {"C�digo", "Nombre", "Area"};
-	private String[] headersRecurso = {"C�digo", "Nombre", "Tipo"};
+	private String[] headersComision = {"Código", "Nombre", "Area"};
+	private String[] headersRecurso = {"Código", "Nombre", "Tipo"};
 	private static DefaultTableModel modeloComision;
 	private static Object[] rowComision;
 	private static DefaultTableModel modeloRecurso;
@@ -63,7 +38,7 @@ public class ModEvento extends JDialog {
 	private Recurso selectedRecurso = null;
 	private JTextField txtCodigo;
 	private JTextField txtTitulo;
-	private JComboBox cmbTipo;
+	private JComboBox<TipoEvento> cmbTipo;
 	private JTable tableComision;
 	private JTable tableComisionS;
 	private JButton btnQuitRecurso;
@@ -97,17 +72,29 @@ public class ModEvento extends JDialog {
 		setBounds(100, 100, 1104, 506);
 		Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
         setIconImage(icon);
-        
-        for (Comision comision : evento.getComisiones()) {
-			Comision encontrado = GestionEvento.getInstance().buscarComisionID(comision.getCodComision());
-			if(encontrado != null) {
+
+		EventoComisionDAO ecDao = new EventoComisionDAO();
+        for (Comision comision : ecDao.getComisionPorEvento(evento.getId())) {
+            Comision encontrado = null;
+            try {
+                encontrado = GestionEvento.getInstance().buscarComisionID(comision.getCodComision());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            if(encontrado != null) {
 				encontrado.setSelected(true);
 			}
 		}
-        
-        for (Recurso recurso : evento.getRecursos()) {
-			Recurso encontrado = GestionEvento.getInstance().buscarRecursoID(recurso.getId());
-			if(encontrado != null) {
+
+		EventoRecursoDAO erDao = new EventoRecursoDAO();
+        for (Recurso recurso : erDao.getRecursoPorEvento(evento.getId())) {
+            Recurso encontrado = null;
+            try {
+                encontrado = GestionEvento.getInstance().buscarRecursoID(recurso.getId());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            if(encontrado != null) {
 				encontrado.setSelected(true);
 			}
 		}
@@ -131,7 +118,7 @@ public class ModEvento extends JDialog {
 			panel.add(panel_1);
 			panel_1.setLayout(null);
 			
-			JLabel lblNewLabel = new JLabel("C\u00F3digo:");
+			JLabel lblNewLabel = new JLabel("Código:");
 			lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel.setBounds(23, 32, 63, 17);
 			panel_1.add(lblNewLabel);
@@ -143,7 +130,7 @@ public class ModEvento extends JDialog {
 			panel_1.add(txtCodigo);
 			txtCodigo.setColumns(10);
 			
-			JLabel lblNewLabel_1 = new JLabel("T\u00EDtulo:");
+			JLabel lblNewLabel_1 = new JLabel("Título:");
 			lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_1.setBounds(23, 76, 46, 14);
 			panel_1.add(lblNewLabel_1);
@@ -159,10 +146,45 @@ public class ModEvento extends JDialog {
 			lblNewLabel_2.setBounds(433, 33, 46, 14);
 			panel_1.add(lblNewLabel_2);
 			
-			cmbTipo = new JComboBox();
-			cmbTipo.setModel(new DefaultComboBoxModel(new String[] {"<Seleccione>", "Conferencia", "Panel", "Ponencia", "Poster", "Mesa Reonda"}));
+			TipoEventoDAO teDao = new TipoEventoDAO();
+            try {
+				ArrayList<TipoEvento> tipos = teDao.getAll();
+				DefaultComboBoxModel<TipoEvento> model = new DefaultComboBoxModel<>();
+				model.addElement(new TipoEvento("0","<Seleccione>"));
+
+				for(TipoEvento tipo : tipos) {
+					model.addElement(tipo);
+				}
+
+				cmbTipo = new JComboBox<>(model);
+				cmbTipo.setRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+																  boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						if (value instanceof TipoEvento) {
+							TipoEvento tipo = (TipoEvento) value;
+							setText(tipo.getNombre());
+						}
+						return this;
+					}
+				});
+
+				if(evento.getTipo() != null) {
+					for (int i = 0; i < cmbTipo.getItemCount(); i++) {
+						TipoEvento item = cmbTipo.getItemAt(i);
+						if (Objects.equals(item.getIdTipEven(), evento.getTipo().getIdTipEven())) {
+							cmbTipo.setSelectedIndex(i);
+							break;
+						}
+					}
+				} else {
+					cmbTipo.setSelectedIndex(0); // Seleccionar "<Seleccione>" por defecto
+				}
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
 			cmbTipo.setBounds(489, 30, 139, 20);
-			cmbTipo.setSelectedItem(evento.getIdTipo().toString());
 			panel_1.add(cmbTipo);
 			
 			JLabel lblNewLabel_3 = new JLabel("Fecha:");
@@ -194,8 +216,12 @@ public class ModEvento extends JDialog {
 					indexC = tableComision.getSelectedRow();
 					if(indexC >=  0) {
 						String cod = (String) tableComision.getValueAt(indexC, 0);
-						selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
-						if(selectedComision != null) {
+                        try {
+                            selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedComision != null) {
 							btnAddComision.setEnabled(true);
 							btnQuitComision.setEnabled(false);
 						}
@@ -214,7 +240,7 @@ public class ModEvento extends JDialog {
 				 public void actionPerformed(ActionEvent e) {
 					 if(existeJurados(selectedComision)) {
 							JOptionPane.showMessageDialog(null, 
-									"Esta comisi�n tiene jurados en com�n con otra ya seleccionada.",
+									"Esta comisión tiene jurados en común con otra ya seleccionada.",
 									"Error", JOptionPane.ERROR_MESSAGE);
 						}else {
 							selectedComision.setSelected(true);
@@ -262,8 +288,12 @@ public class ModEvento extends JDialog {
 					indexCS = tableComisionS.getSelectedRow();
 					if(indexCS >=  0) {
 						String cod = (String) tableComisionS.getValueAt(indexCS, 0);
-						selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
-						if(selectedComision != null) {
+                        try {
+                            selectedComision = GestionEvento.getInstance().buscarComisionID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedComision != null) {
 							btnAddComision.setEnabled(false);
 							btnQuitComision.setEnabled(true);
 						}
@@ -294,8 +324,12 @@ public class ModEvento extends JDialog {
 					indexR = tableRecurso.getSelectedRow();
 					if(indexR >=  0) {
 						String cod = (String) tableRecurso.getValueAt(indexR, 0);
-						selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
-						if(selectedRecurso != null) {
+                        try {
+                            selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedRecurso != null) {
 							btnAddRecurso.setEnabled(true);
 							btnQuitRecurso.setEnabled(false);
 						}
@@ -312,10 +346,10 @@ public class ModEvento extends JDialog {
 			btnAddRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnAddRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(!(tieneLocal) && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
+					if(!(tieneLocal) && (selectedRecurso.getLocal() != null)) {
 						selectedRecurso.setSelected(true);
 						tieneLocal = true;
-					}else if(tieneLocal && (selectedRecurso.getIdTipo().toString().equals("Local"))) {
+					}else if(tieneLocal && (selectedRecurso.getLocal() != null)) {
 						JOptionPane.showMessageDialog(null, 
 				                "Solo se puede seleccionar un local.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
@@ -336,7 +370,7 @@ public class ModEvento extends JDialog {
 			btnQuitRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnQuitRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(selectedRecurso.getIdTipo().toString().equals("Local")) {
+					if(selectedRecurso.getLocal() != null) {
 						tieneLocal = false;
 					}
 					selectedRecurso.setSelected(false);
@@ -368,8 +402,12 @@ public class ModEvento extends JDialog {
 					indexRS = tableRecursoS.getSelectedRow();
 					if(indexRS >=  0) {
 						String cod = (String) tableRecursoS.getValueAt(indexRS, 0);
-						selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
-						if(selectedRecurso != null) {
+                        try {
+                            selectedRecurso = GestionEvento.getInstance().buscarRecursoID(cod);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        if(selectedRecurso != null) {
 							btnAddRecurso.setEnabled(false);
 							btnQuitRecurso.setEnabled(true);
 						}
@@ -390,7 +428,7 @@ public class ModEvento extends JDialog {
 				JButton okButton = new JButton("Modificar");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						if(txtTitulo.getText().toString().equals("") || cmbTipo.getSelectedIndex() == 0) {
+						if(txtTitulo.getText().toString().isEmpty()) {
 							JOptionPane.showMessageDialog(null, 
 					                "Debe llenar todos los datos generales.",
 					                "Error", JOptionPane.ERROR_MESSAGE);
@@ -398,41 +436,63 @@ public class ModEvento extends JDialog {
 							Date fecha = (Date) spnFecha.getValue();
 							int cantRecurSel = 0;
 							int cantComiSel = 0;
-							for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-								if(obj.getSelected()) {
-									cantRecurSel++;
-								}
-							}
-							for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-								if(obj.getSelected()) {
-									cantComiSel++;
-								}
-							}
-							if(cantRecurSel == 0 || cantComiSel == 0) {
+                            try {
+                                for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
+                                    if(obj.getSelected()) {
+                                        cantRecurSel++;
+                                    }
+                                }
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            try {
+                                for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
+                                    if(obj.getSelected()) {
+                                        cantComiSel++;
+                                    }
+                                }
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            if(cantRecurSel == 0 || cantComiSel == 0) {
 								JOptionPane.showMessageDialog(null, 
-										"Debe seleccionar al menos una comisi�n y un recurso.",
+										"Debe seleccionar al menos una comision y un recurso.",
 										"Error", JOptionPane.ERROR_MESSAGE);
 							}else {
-								if(tieneLocal) {
-									evento.setTitulo(txtTitulo.getText().toString());
-									evento.setIdTipo(cmbTipo.getSelectedItem().toString());
+								if(tieneLocal && validarTipoEvento()) {
+									EventoDAO eventoDAO = new EventoDAO();
+									evento.setTitulo(txtTitulo.getText());
+									evento.setTipo((TipoEvento) cmbTipo.getSelectedItem());
 									evento.setFecha(fecha);
 									evento.getComisiones().clear();
 									evento.getRecursos().clear();
-									for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-										if(obj.getSelected()) {
-											evento.getRecursos().add(obj);
-											obj.setSelected(false);
-										}
-									}
-									for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-										if(obj.getSelected()) {
-											evento.getComisiones().add(obj);
-											obj.setSelected(false);
-										}
-									}
-									JOptionPane.showMessageDialog(null, 
-											"Modificaci�n exitosa.",
+                                    try {
+                                        for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
+                                            if(obj.getSelected()) {
+                                                evento.getRecursos().add(obj);
+                                                obj.setSelected(false);
+                                            }
+                                        }
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    try {
+                                        for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
+                                            if(obj.getSelected()) {
+                                                evento.getComisiones().add(obj);
+                                                obj.setSelected(false);
+                                            }
+                                        }
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    try {
+                                        eventoDAO.update(evento);
+                                    } catch (SQLException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    JOptionPane.showMessageDialog(null,
+											"Modificación exitosa.",
 											"Aviso", JOptionPane.WARNING_MESSAGE);
 									dispose();
 								}else {
@@ -454,13 +514,21 @@ public class ModEvento extends JDialog {
 				cancelButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
-							comision.setSelected(false);
-						}
-						for (Recurso recurso : GestionEvento.getInstance().getMisRecursos()) {
-							recurso.setSelected(false);
-						}
-						dispose();
+                        try {
+                            for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
+                                comision.setSelected(false);
+                            }
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        try {
+                            for (Recurso recurso : GestionEvento.getInstance().getMisRecursos()) {
+                                recurso.setSelected(false);
+                            }
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        dispose();
 					}
 				});
 				cancelButton.setActionCommand("Cancel");
@@ -475,14 +543,19 @@ public class ModEvento extends JDialog {
 
 	private void loadRecursosSelect() {
 		modeloRecursoSelected.setRowCount(0);
-		ArrayList<Recurso> aux = GestionEvento.getInstance().getMisRecursos();
-		rowRecursoSelected = new Object[tableRecursoS.getColumnCount()];
+        ArrayList<Recurso> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisRecursos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        rowRecursoSelected = new Object[tableRecursoS.getColumnCount()];
 		for (Recurso obj : aux) {
 			if(obj.getDisponibilidad()) {
 				if(obj.getSelected()) {
 					rowRecursoSelected[0] = obj.getId();
 					rowRecursoSelected[1] = obj.getNombre();
-					rowRecursoSelected[2] = obj.getIdTipo();
+					rowRecursoSelected[2] = obj.getTipo();
 					modeloRecursoSelected.addRow(rowRecursoSelected);
 				}
 			}
@@ -491,14 +564,19 @@ public class ModEvento extends JDialog {
 
 	private void loadRecursos() {
 		modeloRecurso.setRowCount(0);
-		ArrayList<Recurso> aux = GestionEvento.getInstance().getMisRecursos();
-		rowRecurso = new Object[tableRecurso.getColumnCount()];
+        ArrayList<Recurso> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisRecursos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        rowRecurso = new Object[tableRecurso.getColumnCount()];
 		for (Recurso obj : aux) {
 			if(obj.getDisponibilidad()) {
 				if(!(obj.getSelected())) {
 					rowRecurso[0] = obj.getId();
 					rowRecurso[1] = obj.getNombre();
-					rowRecurso[2] = obj.getIdTipo();
+					rowRecurso[2] = obj.getTipo();
 					modeloRecurso.addRow(rowRecurso);
 				}
 			}
@@ -507,8 +585,13 @@ public class ModEvento extends JDialog {
 
 	private void loadComisionesSelect() {
 		modeloComisionSelected.setRowCount(0);
-		ArrayList<Comision> aux = GestionEvento.getInstance().getMisComisiones();
-		rowComisionSelected = new Object[tableComisionS.getColumnCount()];
+        ArrayList<Comision> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisComisiones();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        rowComisionSelected = new Object[tableComisionS.getColumnCount()];
 		for (Comision obj : aux) {
 			if(obj.getSelected()){
 				rowComisionSelected[0] = obj.getCodComision();
@@ -521,8 +604,13 @@ public class ModEvento extends JDialog {
 
 	private void loadComisiones() {
 		modeloComision.setRowCount(0);
-		ArrayList<Comision> aux = GestionEvento.getInstance().getMisComisiones();
-		rowComision = new Object[tableComision.getColumnCount()];
+        ArrayList<Comision> aux = null;
+        try {
+            aux = GestionEvento.getInstance().getMisComisiones();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        rowComision = new Object[tableComision.getColumnCount()];
 		for (Comision obj : aux) {
 			if(!(obj.getSelected())){
 				rowComision[0] = obj.getCodComision();
@@ -534,27 +622,32 @@ public class ModEvento extends JDialog {
 	}
 	
 	private Boolean existeJurados(Comision obj) {
-		for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
-			if(comision.getSelected()) {
-				for (Jurado jurado : comision.getJurado()) {
-					for (Jurado jurado2 : obj.getJurado()) {
-						if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	public static Date convertirFecha(String fechaStr) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
         try {
-            return sdf.parse(fechaStr);
-        } catch (ParseException e) {
-            return null;
+            for (Comision comision : GestionEvento.getInstance().getMisComisiones()) {
+                if(comision.getSelected()) {
+                    for (Jurado jurado : comision.getJurado()) {
+                        for (Jurado jurado2 : obj.getJurado()) {
+                            if(jurado2.getIdJurado().equals(jurado.getIdJurado())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-    }
+        return false;
+	}
+
+	public boolean validarTipoEvento() {
+		if (cmbTipo.getSelectedIndex() <= 0) {
+			JOptionPane.showMessageDialog(this, "Debe seleccionar un tipo de evento",
+					"Validación", JOptionPane.WARNING_MESSAGE);
+			cmbTipo.requestFocus();
+			return false;
+		}
+		return true;
+	}
 
 }

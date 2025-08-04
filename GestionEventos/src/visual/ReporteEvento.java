@@ -21,7 +21,8 @@ public class ReporteEvento extends JDialog {
 
     public static void main(String[] args) {
         try {
-            Evento eventoEjemplo = new Evento("E-1", "Evento de Prueba", "Conferencia", new Date());
+            TipoEvento tipoEjemplo = new TipoEvento("T-1", "Congreso");
+            Evento eventoEjemplo = new Evento("E-1", "Evento de Prueba", tipoEjemplo, new Date());
             ReporteEvento dialog = new ReporteEvento(eventoEjemplo);
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             dialog.setVisible(true);
@@ -59,7 +60,7 @@ public class ReporteEvento extends JDialog {
 
         // Panel Informaci�n General
         JPanel infoPanel = new JPanel();
-        infoPanel.setBorder(new TitledBorder(null, "Informaci�n General", 
+        infoPanel.setBorder(new TitledBorder(null, "Información General",
             TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
         infoPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -80,14 +81,14 @@ public class ReporteEvento extends JDialog {
         lblFecha.setBounds(10, 40, 200, 14);
         infoPanel.add(lblFecha);
 
-        JLabel lblTipo = new JLabel("Tipo: " + evento.getIdTipo());
+        JLabel lblTipo = new JLabel("Tipo: " + evento.getTipo().getNombre());
         lblTipo.setFont(new Font("Tahoma", Font.BOLD, 13));
         lblTipo.setBounds(10, 60, 200, 14);
         infoPanel.add(lblTipo);
 
         // Panel de Estad�sticas
         JPanel statsPanel = new JPanel();
-        statsPanel.setBorder(new TitledBorder(null, "Estad�sticas", 
+        statsPanel.setBorder(new TitledBorder(null, "Estadísticas",
             TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
         statsPanel.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground") != null ?
             UIManager.getColor("InternalFrame.activeTitleBackground") :
@@ -131,7 +132,7 @@ public class ReporteEvento extends JDialog {
                 return false;
             }
         };
-        String[] headerComisiones = {"C�digo", "Nombre", "�rea", "Jurados", "Trabajos"};
+        String[] headerComisiones = {"Código", "Nombre", "Área", "Jurados", "Trabajos"};
         modelComisiones.setColumnIdentifiers(headerComisiones);
 
         tableComisiones = new JTable(modelComisiones);
@@ -194,7 +195,7 @@ public class ReporteEvento extends JDialog {
             Object[] row = {
                 comision.getCodComision(),
                 comision.getNombre(),
-                comision.getArea(),
+                comision.getArea().getNombre(),
                 comision.getJurado().size(),
                 comision.getTrabajos().size()
             };
@@ -207,7 +208,7 @@ public class ReporteEvento extends JDialog {
             Object[] row = {
                 recurso.getId(),
                 recurso.getNombre(),
-                recurso.getIdTipo(),
+                recurso.getTipo().getNombre(),
                 recurso.getDisponibilidad() ? "Disponible" : "No Disponible"
             };
             modelRecursos.addRow(row);
