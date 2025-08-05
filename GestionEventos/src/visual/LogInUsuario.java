@@ -117,5 +117,17 @@ public class LogInUsuario extends JFrame {
 		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 		btnNewButton.setBounds(122, 233, 98, 23);
 		panel.add(btnNewButton);
+
+		try {
+			if (GestionEvento.getInstance().getMisUsuarios().size() == 1 &&
+					GestionEvento.getInstance().existeUserName("admin")) {
+				JOptionPane.showMessageDialog(null,
+						"Se creó un usuario por defecto:\nUsuario: admin\nContraseña: admin123",
+						"Usuario creado", JOptionPane.INFORMATION_MESSAGE);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 }
