@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 
 import DAO.LocalDAO;
+import DAO.RecursoDAO;
 import DAO.TipoRecursoDAO;
 import logico.*;
 import java.awt.event.ActionListener;
@@ -138,7 +139,7 @@ public class RegRecurso extends JDialog {
         
         txt_Id = new JTextField();
         txt_Id.setEditable(false);
-        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(7));
+        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(5));
         txt_Id.setBounds(112, 29, 56, 22);
         panel_1.add(txt_Id);
         txt_Id.setColumns(10);
@@ -262,13 +263,13 @@ public class RegRecurso extends JDialog {
                         return this;
                     }
                 });
-                cbxTipo.setSelectedIndex(0);
+            cbxTipo.setSelectedIndex(0);
+            cbxTipo.setBounds(116, 21, 152, 22);
+            panel_otro.add(cbxTipo);
         } catch (SQLException e){
             e.printStackTrace();
         }
-        cbxTipo.setBounds(116, 21, 152, 22);
-        panel_otro.add(cbxTipo);
-        
+
         JPanel buttonPane = new JPanel();
         buttonPane.setBackground(UIManager.getColor("InternalFrame.activeTitleGradient"));
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -278,12 +279,12 @@ public class RegRecurso extends JDialog {
         okButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		if(modificar == false) {
-        			if(!(txt_Nombre.getText().equals(""))) {
+        			if(!(txt_Nombre.getText().isEmpty())) {
         				if(rdLocal.isSelected()) {
         					if(cmbCampus.getSelectedIndex() > 0) {
         						Local localObj = (Local)cmbCampus.getSelectedItem();
-                                Recurso localRecurso = new Recurso(txt_Id.getText().toString(),
-                                        txt_Nombre.getText().toString(),
+                                Recurso localRecurso = new Recurso(txt_Id.getText(),
+                                        txt_Nombre.getText(),
                                         null,
                                         true,
                                         localObj);
@@ -324,17 +325,19 @@ public class RegRecurso extends JDialog {
         						"Error", JOptionPane.ERROR_MESSAGE);
         			}
         		}else {
-        			String cod = txt_Id.getText().toString();
+        			String cod = txt_Id.getText();
                     Recurso recursoMod = null;
                     try {
                         recursoMod = GestionEvento.getInstance().buscarRecursoID(cod);
-                        recursoMod.setNombre(txt_Nombre.getText().toString());
+                        recursoMod.setNombre(txt_Nombre.getText());
                         if(recursoMod.getLocal() != null) {
                             recursoMod.setLocal((Local)cmbCampus.getSelectedItem());
                         }else {
                             recursoMod.setTipo((TipoRecurso) cbxTipo.getSelectedItem());
                         }
-                        JOptionPane.showMessageDialog(null, "Modificaci�n exitosa.",
+                        RecursoDAO recDao = new RecursoDAO();
+                        recDao.update(recursoMod);
+                        JOptionPane.showMessageDialog(null, "Modificación exitosa.",
                                 "Modificación", JOptionPane.INFORMATION_MESSAGE);
                         dispose();
                     } catch (SQLException ex) {
@@ -360,7 +363,7 @@ public class RegRecurso extends JDialog {
     }
 
     private void clean() {
-        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(7));
+        txt_Id.setText("R-"+GeneradorCodigos.generarCodigoUnico(5));
         txt_Nombre.setText("");
         cbxTipo.setSelectedIndex(0);
         rdLocal.setSelected(true);

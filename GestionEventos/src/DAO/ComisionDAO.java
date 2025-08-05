@@ -10,11 +10,7 @@ public class ComisionDAO implements DAO<Comision>{
     public Comision get(String Id) throws SQLException {
         Connection con = ConexionDB.getConnection();
         Comision comision = null;
-        String sql = "SELECT c.codComision, c.nombre AS nameCom, a.idArea, a.nombreArea, e.titulo FROM Comision c " +
-                "JOIN Area a ON a.idArea = c.idArea " +
-                "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision " +
-                "JOIN Evento e ON e.idEvento = ec.idEvento " +
-                "WHERE codComision = ?";
+        String sql = "SELECT codComision, nombre AS nameCom, idArea FROM Comision WHERE codComision = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, Id);
         ResultSet rs = ps.executeQuery();
@@ -49,10 +45,7 @@ public class ComisionDAO implements DAO<Comision>{
 
         try {
             con = ConexionDB.getConnection();
-            String sql = "SELECT c.codComision, c.nombre AS nameCom, a.idArea,a.nombreArea, e.titulo FROM Comision c " +
-                                    "JOIN Area a ON a.idArea = c.idArea " +
-                                    "JOIN EVENTO_COMISION ec ON ec.idComision = c.codComision " +
-                                    "JOIN Evento e ON e.idEvento = ec.idEvento";
+            String sql = "SELECT codComision, nombre AS nameCom, idArea FROM Comision ";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -96,7 +89,6 @@ public class ComisionDAO implements DAO<Comision>{
     public boolean insert(Comision comision) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
-
         try{
             con = ConexionDB.getConnection();
             con.setAutoCommit(false);
@@ -111,7 +103,6 @@ public class ComisionDAO implements DAO<Comision>{
                 con.rollback();
                 return false;
             }
-
             //INSERT ASSOCIATED JURYS
             ComisionJuradoDAO cjDao = new ComisionJuradoDAO();
             for(Jurado j : comision.getJurado()){
@@ -121,7 +112,6 @@ public class ComisionDAO implements DAO<Comision>{
                     return false;
                 }
             }
-
             //INSERT ASSOCIATED WORKS
             ComisionTrabajoDAO ctDao = new ComisionTrabajoDAO();
             for(TrabajoCientifico t : comision.getTrabajos()) {
@@ -131,7 +121,6 @@ public class ComisionDAO implements DAO<Comision>{
                     return false;
                 }
             }
-
             con.commit();
             return true;
         } catch (SQLException e){

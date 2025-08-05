@@ -16,7 +16,7 @@ public class PersonaDAO  {
         try (Connection conn = ConexionDB.getConnection()) {
 
             // 1. Intentar cargar como Jurado
-            String sqlJurado = "SELECT j.idJurado, a.idArea, a.nombre AS nombreArea, p.dni, p.nombre, p.apellido, p.telefono " +
+            String sqlJurado = "SELECT j.idJurado, a.idArea, a.nombreArea, p.dni, p.nombre, p.apellido, p.telefono " +
                                "FROM Jurado j " +
                                "JOIN Persona p ON j.dni = p.dni " +
                                "JOIN Area a ON j.idArea = a.idArea " +

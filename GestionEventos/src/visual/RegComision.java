@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableModel;
 import DAO.AreaDAO;
 import DAO.ComisionDAO;
 import DAO.ComisionTrabajoDAO;
+import DAO.JuradoDAO;
 import logico.*;
 
 import java.awt.event.ActionListener;
@@ -68,11 +69,10 @@ public class RegComision extends JDialog {
 	        txtCodigo.setText(comision.getCodComision());
 	        txtNombre.setText(comision.getNombre());
 	        cbxArea.setSelectedItem(comision.getArea());
-	        
-	        for (Persona persona : GestionEvento.getInstance().getMisPersonas()) {
-	            if (persona instanceof Jurado) {
-	                ((Jurado) persona).setSeleccionado(false);
-	            }
+
+			JuradoDAO jDao = new JuradoDAO();
+	        for (Jurado persona : jDao.getAll()) {
+	            persona.setSeleccionado(false);
 	        }
 	        
 	        for (TrabajoCientifico trabajo : GestionEvento.getInstance().getMisTrabajosCientificos()) {
@@ -164,7 +164,7 @@ public class RegComision extends JDialog {
 			panel.add(panel_1);
 			panel_1.setLayout(null);
 			
-			JLabel lblNewLabel = new JLabel("C\u00F3digo:");
+			JLabel lblNewLabel = new JLabel("Código:");
 			lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel.setForeground(Color.BLACK);
 			lblNewLabel.setBounds(10, 31, 50, 15);
@@ -176,7 +176,7 @@ public class RegComision extends JDialog {
 			lblNewLabel_1.setBounds(10, 80, 55, 14);
 			panel_1.add(lblNewLabel_1);
 			
-			JLabel lblNewLabel_2 = new JLabel("\u00C1rea:");
+			JLabel lblNewLabel_2 = new JLabel("Área:");
 			lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 13));
 			lblNewLabel_2.setForeground(Color.BLACK);
 			lblNewLabel_2.setBounds(240, 31, 40, 14);
@@ -246,9 +246,10 @@ public class RegComision extends JDialog {
 				public void mouseClicked(MouseEvent e) {
 					indexJ = table.getSelectedRow();
 					if(indexJ >=  0) {
-						String cedula = (String) table.getValueAt(indexJ, 0);
+						String id = (String) table.getValueAt(indexJ, 0);
                         try {
-                            selectedJurado = (Jurado) GestionEvento.getInstance().buscarPersonasCedula(cedula);
+							JuradoDAO juradoDAO = new JuradoDAO();
+                            selectedJurado = juradoDAO.get(id);
 							if(selectedJurado != null) {
 								btnAddJurado.setEnabled(true);
 								btnQuitJurado.setEnabled(false);
@@ -260,7 +261,7 @@ public class RegComision extends JDialog {
 				}
 			});
 			modeloNoSelectJurado = new DefaultTableModel();
-			String [] identificadores2 = {"Cédula", "Apellido","Area"};
+			String [] identificadores2 = {"ID", "Apellido","Área"};
 			modeloNoSelectJurado.setColumnIdentifiers(identificadores2);
 			table.setModel(modeloNoSelectJurado);
 			scrollPane.setViewportView(table);
@@ -294,7 +295,7 @@ public class RegComision extends JDialog {
 				}
 			});
 			modeloSelectJurado = new DefaultTableModel(); 
-			String [] identificadores3 = {"Cédula", "Apellido","Area"};
+			String [] identificadores3 = {"ID", "Apellido","Area"};
 			table_2.setModel(modeloSelectJurado); 
 			scrollPane_2.setViewportView(table_2);
 			modeloSelectJurado.setColumnIdentifiers(identificadores3);
@@ -322,14 +323,12 @@ public class RegComision extends JDialog {
 			                    cbxArea.setEnabled(false);
 			                }
 			               
-			                String nombre = rowData[0].toString();
-			                String cedula = rowData[1].toString();
+			                String id = rowData[0].toString();
                             try {
-                                for (Persona persona : GestionEvento.getInstance().getMisPersonas()) {
-                                    if (persona instanceof Jurado &&
-                                        persona.getNombre().equals(nombre) &&
-                                        persona.getCedula().equals(cedula)) {
-                                        ((Jurado) persona).setSeleccionado(true);
+								JuradoDAO jDao = new JuradoDAO();
+                                for (Jurado persona : jDao.getAll()) {
+                                    if (persona.getIdJurado().equals(id)) {
+                                        persona.setSeleccionado(true);
                                         break;
                                     }
                                 }
@@ -338,7 +337,7 @@ public class RegComision extends JDialog {
                             }
                         } else {
 			                JOptionPane.showMessageDialog(null, 
-			                    "El �rea del jurado debe coincidir con el �rea de la comisi�n",
+			                    "El área del jurado debe coincidir con el área de la comisión",
 			                    "Error", JOptionPane.ERROR_MESSAGE);
 			            }
 			        }
@@ -367,14 +366,12 @@ public class RegComision extends JDialog {
 			                cbxArea.setEnabled(true);
 			            }
 			            
-			            String nombre = rowData[0].toString();
-			            String cedula = rowData[1].toString();
+			            String id = rowData[0].toString();
                         try {
-                            for (Persona persona : GestionEvento.getInstance().getMisPersonas()) {
-                                if (persona instanceof Jurado &&
-                                    persona.getNombre().equals(nombre) &&
-                                    persona.getCedula().equals(cedula)) {
-                                    ((Jurado) persona).setSeleccionado(false);
+							JuradoDAO jDao = new JuradoDAO();
+                            for (Jurado jurado : jDao.getAll()) {
+                                if (jurado.getIdJurado().equals(id)) {
+                                    jurado.setSeleccionado(false);
                                     break;
                                 }
                             }
@@ -389,7 +386,7 @@ public class RegComision extends JDialog {
 			panel_2.add(btnQuitJurado);
 			
 			JPanel panel_3 = new JPanel();
-			panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Trabajos Cient\u00EDficos:", TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
+			panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Trabajos Científicos:", TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
 			panel_3.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
 			panel_3.setBounds(555, 139, 524, 333);
 			panel.add(panel_3);
@@ -413,14 +410,13 @@ public class RegComision extends JDialog {
 						String cod = (String) table_1.getValueAt(indexT, 0);
                         try {
                             selectedTrabajo = GestionEvento.getInstance().buscarTrabajoID(cod);
+							if(selectedTrabajo != null) {
+								btnAddTrabajo.setEnabled(true);
+								btnQuitTrabajo.setEnabled(false);
+							}
                         } catch (SQLException ex) {
                             throw new RuntimeException(ex);
                         }
-                        if(selectedTrabajo != null) {
-							btnAddTrabajo.setEnabled(true);
-							btnQuitTrabajo.setEnabled(false);
-						}
-
 					}
 				}
 			});
@@ -447,11 +443,11 @@ public class RegComision extends JDialog {
 
 							Object[] rowData = new Object[3];
 							for (int i = 0; i < 3; i++) {
-								rowData[i] = modeloNoSelectJurado.getValueAt(selectedRow, i);
+								rowData[i] = modeloNoSelectTrabajo.getValueAt(selectedRow, i);
 							}
 
-							modeloSelectJurado.addRow(rowData);
-							modeloNoSelectJurado.removeRow(selectedRow);
+							modeloSelecTrabajo.addRow(rowData);
+							modeloNoSelectTrabajo.removeRow(selectedRow);
 
 							if (modeloSelectJurado.getRowCount() > 0) {
 								cbxArea.setEnabled(false);
@@ -572,13 +568,12 @@ public class RegComision extends JDialog {
 				            }
 
                             try {
-                                for (Persona jurado : GestionEvento.getInstance().getMisPersonas()) {
-                                    if(jurado instanceof Jurado) {
-                                        if(((Jurado) jurado).isSeleccionado()) {
-                                            comision.getJurado().add((Jurado) jurado);
-                                            ((Jurado) jurado).setSeleccionado(false);
-                                        }
-                                    }
+								JuradoDAO jDao = new JuradoDAO();
+                                for (Jurado jurado : jDao.getAll()) {
+									if( jurado.isSeleccionado()) {
+										comision.getJurado().add(jurado);
+										jurado.setSeleccionado(false);
+									}
                                 }
                             } catch (SQLException ex) {
                                 throw new RuntimeException(ex);
@@ -654,10 +649,8 @@ public class RegComision extends JDialog {
 	    cbxArea.setSelectedIndex(0);
 	    cbxArea.setEnabled(true);
 	    
-	    for (Persona persona : GestionEvento.getInstance().getMisPersonas()) {
-	        if (persona instanceof Jurado) {
-	            ((Jurado) persona).setSeleccionado(false);
-	        }
+	    for (Jurado jurado : GestionEvento.getInstance().getMisJurados()) {
+	           jurado.setSeleccionado(false);
 	    }
 	    
 	    for (TrabajoCientifico trabajo : GestionEvento.getInstance().getMisTrabajosCientificos()) {
@@ -677,15 +670,15 @@ public class RegComision extends JDialog {
 	
 	private void loadJurados() {
 	    modeloNoSelectJurado.setRowCount(0);
-        ArrayList<Persona> aux = new ArrayList<>();
+        ArrayList<Jurado> aux = new ArrayList<>();
         try {
-            aux = GestionEvento.getInstance().getMisPersonas();
+            aux = GestionEvento.getInstance().getMisJurados();
 			rowJuradoSelect = new Object[3];
-			for(Persona persona : aux) {
-				if(persona instanceof Jurado && !((Jurado) persona).isSeleccionado()) {
-					rowJuradoSelect[0] = persona.getCedula();
-					rowJuradoSelect[1] = persona.getApellidos();
-					rowJuradoSelect[2] = ((Jurado) persona).getArea();
+			for(Jurado jurado : aux) {
+				if(!jurado.isSeleccionado()) {
+					rowJuradoSelect[0] = jurado.getIdJurado();
+					rowJuradoSelect[1] = jurado.getApellidos();
+					rowJuradoSelect[2] = jurado.getArea().getNombre();
 					modeloNoSelectJurado.addRow(rowJuradoSelect);
 				}
 			}
@@ -696,15 +689,16 @@ public class RegComision extends JDialog {
 	
 	private void loadSelectJurados() { 
 		modeloSelectJurado.setRowCount(0);
-        ArrayList<Persona> aux = new ArrayList<>();
+        ArrayList<Jurado> aux = new ArrayList<>();
         try {
-            aux = GestionEvento.getInstance().getMisPersonas();
+            aux = GestionEvento.getInstance().getMisJurados();
 			rowJuradoNoSelect = new Object[3];
-			for (Persona persona : aux) {
-				if (persona instanceof Jurado && ((Jurado) persona).isSeleccionado()) {
-					rowJuradoNoSelect[0] = persona.getCedula();
+			for (Jurado persona : aux) {
+				if (persona.isSeleccionado()) {
+					rowJuradoNoSelect[0] = persona.getIdJurado();
 					rowJuradoNoSelect[1] = persona.getApellidos();
-					rowJuradoNoSelect[2] = ((Jurado) persona).getArea(); modeloSelectJurado.addRow(rowJuradoNoSelect);
+					rowJuradoNoSelect[2] = persona.getArea().getNombre();
+					modeloSelectJurado.addRow(rowJuradoNoSelect);
 				}
 			}
 		} catch (SQLException e) {
@@ -722,7 +716,7 @@ public class RegComision extends JDialog {
 				if(!trabajo.isSeleccionado()) {
 					rowTrabajoNoSelect[0] = trabajo.getId();
 					rowTrabajoNoSelect[1] = trabajo.getNombre();
-					rowTrabajoNoSelect[2] = trabajo.getArea();
+					rowTrabajoNoSelect[2] = trabajo.getArea().getNombre();
 					modeloNoSelectTrabajo.addRow(rowTrabajoNoSelect);
 				}
 			}
@@ -742,7 +736,7 @@ public class RegComision extends JDialog {
 				if (trabajo.isSeleccionado()) {
 					rowTrabajoNoSelect[0] = trabajo.getId();
 					rowTrabajoNoSelect[1] = trabajo.getNombre();
-					rowTrabajoNoSelect[2] = trabajo.getArea();
+					rowTrabajoNoSelect[2] = trabajo.getArea().getNombre();
 					modeloSelecTrabajo.addRow(rowTrabajoSelect);
 				}
 			}

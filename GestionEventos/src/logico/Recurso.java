@@ -21,7 +21,7 @@ public class Recurso implements Serializable {
 		this.nombre = nombre;
 		this.tipo = tipo;
 		this.disponibilidad = disponibilidad;
-		this.selected = selected;
+		this.selected = false;
 		this.local = local;
 	}
 

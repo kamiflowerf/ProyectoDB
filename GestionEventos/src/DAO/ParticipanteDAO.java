@@ -1,6 +1,7 @@
 package DAO;
 
 import logico.Participante;
+import logico.TrabajoCientifico;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -129,6 +130,36 @@ public class ParticipanteDAO implements DAO<Participante> {
 
     @Override
     public boolean delete(Participante participante) throws SQLException {
-        return false;
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = ConexionDB.getConnection();
+            con.setAutoCommit(false); // Inicia transacción
+
+            // Eliminar trabajos asociados
+            TrabajoCientificoDAO trabajoDAO = new TrabajoCientificoDAO();
+            ArrayList<TrabajoCientifico> trabajos = trabajoDAO.getByParticipante(participante.getIdParticipante());
+            for (TrabajoCientifico trabajo : trabajos) {
+                trabajoDAO.delete(trabajo);
+            }
+
+            // Eliminar al participante
+            String sql = "DELETE FROM Participante WHERE idParticipante = ?";
+            ps = con.prepareStatement(sql);
+            ps.setString(1, participante.getIdParticipante());
+            int rowsAffected = ps.executeUpdate();
+            con.commit();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            if (con != null) con.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (ps != null) ps.close();
+            if (con != null) con.setAutoCommit(true);
+            if (con != null) con.close();
+        }
     }
 }

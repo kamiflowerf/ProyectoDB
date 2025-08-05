@@ -129,4 +129,31 @@ public class TrabajoCientificoDAO implements DAO<TrabajoCientifico>{
         }
     }
 
+    public ArrayList<TrabajoCientifico> getByParticipante(String idParticipante) throws SQLException {
+        ArrayList<TrabajoCientifico> lista = new ArrayList<>();
+        Connection con = ConexionDB.getConnection();
+        String sql = "SELECT idTrabajo, nombre, idArea FROM TrabajoCientifico WHERE idParticipante = ?";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1, idParticipante);
+        ResultSet rs = ps.executeQuery();
+
+        AreaDAO areaDAO = new AreaDAO();
+        ParticipanteDAO participanteDAO = new ParticipanteDAO();
+        while (rs.next()) {
+            Area area = areaDAO.get(rs.getString("idArea"));
+            Participante participante = participanteDAO.get(idParticipante);
+
+            TrabajoCientifico trabajo = new TrabajoCientifico(
+                    rs.getString("idTrabajo"),
+                    rs.getString("nombre"),
+                    area,
+                    participante
+            );
+            lista.add(trabajo);
+        }
+        rs.close();
+        ps.close();
+        con.close();
+        return lista;
+    }
 }

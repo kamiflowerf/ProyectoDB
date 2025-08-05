@@ -64,6 +64,14 @@ public class GestionEvento implements Serializable {
 	public ArrayList<Persona> getMisPersonas() {
 		return misPersonas;
 	}
+
+	public ArrayList<Jurado> getMisJurados(){
+        try {
+            return juradoDAO.getAll();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 	public ArrayList<TrabajoCientifico> getMisTrabajosCientificos() {
         try {
             return trabajoDAO.getAll();
@@ -117,31 +125,23 @@ public class GestionEvento implements Serializable {
 		if(obj instanceof Jurado){
             try {
                 juradoDAO.delete((Jurado) obj);
+				misJurados.remove((Jurado)obj);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            misJurados.remove((Jurado)obj);
 		} else if(obj instanceof Participante) {
             try {
                 participanteDAO.delete((Participante) obj);
+				misParticipantes.remove((Participante)obj);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            misParticipantes.remove((Participante)obj);
 		}
 	}
 	
 	public Persona buscarPersonasCedula(String cedula) {
 		return personaDAO.getPersonByDni(cedula);
 	}
-
-	public Jurado buscarJuradoId(String Id){
-        try {
-           return juradoDAO.get(Id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 	public Participante buscarParticipanteId(String Id){
         try {
@@ -189,10 +189,10 @@ public class GestionEvento implements Serializable {
 	public void eliminarEvento(Evento obj) {
         try {
             eventoDAO.delete(obj);
+			misEventos.remove(obj);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        misEventos.remove(obj);
 	}
 	
 	public Evento buscarEventoID(String cod) {
@@ -206,19 +206,20 @@ public class GestionEvento implements Serializable {
 	public void insertarRecurso(Recurso obj) {
         try {
             recursoDAO.insert(obj);
+			misRecursos.add(obj);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        misRecursos.add(obj);
+
 	}
 	
 	public void eliminarRecurso(Recurso obj) {
         try {
             recursoDAO.delete(obj);
+			misRecursos.remove(obj);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        misRecursos.remove(obj);
 	}
 	
 	public void eliminarUser(User obj) {
@@ -252,10 +253,6 @@ public class GestionEvento implements Serializable {
 			return true;
 		}
 		return false;
-	}
-
-	public static void setGestion(GestionEvento temp) {
-		gestion = temp;
 	}
 	
 	public boolean existeUserName(String userName) {

@@ -75,8 +75,14 @@ public class RecursoDAO implements DAO<Recurso>{
         ps.setString(1, recurso.getId());
         ps.setString(2, recurso.getNombre());
         ps.setBoolean(3, recurso.getDisponibilidad());
-        ps.setString(4,recurso.getTipo().getIdTipRec());
-        ps.setString(5, recurso.getLocal().getIdLocal());
+        if(recurso.getTipo() != null)
+            ps.setString(4,recurso.getTipo().getIdTipRec());
+        else
+            ps.setString(4,null);
+        if(recurso.getLocal() != null)
+            ps.setString(5, recurso.getLocal().getIdLocal());
+        else
+            ps.setString(5, null);
 
         int result = ps.executeUpdate();
         ConexionDB.closePreparedStatement(ps);
@@ -87,11 +93,20 @@ public class RecursoDAO implements DAO<Recurso>{
     @Override
     public boolean update(Recurso recurso) throws SQLException {
         Connection con = ConexionDB.getConnection();
-        String sql = "UPDATE Recurso SET nombre = ?, disponibilidad = ? WHERE idRecurso = ?";
+        String sql = "UPDATE Recurso SET nombre = ?, disponibilidad = ?, idTipRec = ?, idLocal = ? WHERE idRecurso = ?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, recurso.getNombre());
         ps.setBoolean(2, recurso.getDisponibilidad());
-        ps.setString(3, recurso.getId());
+        if(recurso.getTipo() != null)
+            ps.setString(3,recurso.getTipo().getIdTipRec());
+        else
+            ps.setString(3,null);
+        if(recurso.getLocal() != null)
+            ps.setString(4, recurso.getLocal().getIdLocal());
+        else
+            ps.setString(4, null);
+
+        ps.setString(5, recurso.getId());
         int result = ps.executeUpdate();
 
         ConexionDB.closePreparedStatement(ps);

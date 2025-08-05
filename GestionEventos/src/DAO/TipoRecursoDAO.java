@@ -34,7 +34,7 @@ public class TipoRecursoDAO implements DAO<TipoRecurso>{
         Connection con = ConexionDB.getConnection();
         ArrayList<TipoRecurso> lista = new ArrayList<TipoRecurso>();
 
-        String sql = "SELECT idTipRec, nombre FROM TipoRec";
+        String sql = "SELECT idTipRec, nombre FROM TipoRecurso";
         PreparedStatement ps = con.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

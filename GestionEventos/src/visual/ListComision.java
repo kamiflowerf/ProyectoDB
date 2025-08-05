@@ -109,7 +109,7 @@ public class ListComision extends JDialog {
 				}
 			});
 			modelo = new DefaultTableModel();
-			String [] identificadores = {"C�digo", "Nombre", "Area"};
+			String [] identificadores = {"Código", "Nombre", "Area"};
 			modelo.setColumnIdentifiers(identificadores);
 			table.setModel(modelo);
 			scrollPane.setViewportView(table);
@@ -139,7 +139,7 @@ public class ListComision extends JDialog {
 				            }
 				        } else {
 				            JOptionPane.showMessageDialog(null, 
-				                "Debe seleccionar una comisi�n para modificar.",
+				                "Debe seleccionar una comisión para modificar.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				        }
 					}
@@ -160,8 +160,8 @@ public class ListComision extends JDialog {
 				        if(selectedRow >= 0) {
 				        	
 				            int option = JOptionPane.showConfirmDialog(null,
-				                "�Est� seguro que desea eliminar esta comisi�n?",
-				                "Confirmaci�n", JOptionPane.YES_NO_OPTION);
+				                "¿Está seguro que desea eliminar esta comisión?",
+				                "Confirmación", JOptionPane.YES_NO_OPTION);
 				            
 				            if(option == JOptionPane.YES_OPTION) {
 				                String codigo = (String) modelo.getValueAt(selectedRow, 0);
@@ -178,7 +178,7 @@ public class ListComision extends JDialog {
 				        	btnModificar.setEnabled(false);
 			                btnEliminar.setEnabled(false);
 				            JOptionPane.showMessageDialog(null, 
-				                "Debe seleccionar una comisi�n para eliminar.",
+				                "Debe seleccionar una comisión para eliminar.",
 				                "Error", JOptionPane.ERROR_MESSAGE);
 				        }
 					}
@@ -209,15 +209,15 @@ public class ListComision extends JDialog {
         ArrayList<Comision> comisions = null;
         try {
             comisions = comisionDAO.getAll();
+			for (Comision comision : comisions) {
+				row[0] = comision.getCodComision();
+				row[1] = comision.getNombre();
+				row[2] = comision.getArea().getNombre();
+				modelo.addRow(row);
+			}
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        for (Comision comision : comisions) {
-			row[0] = comision.getCodComision();
-			row[1] = comision.getNombre();
-			row[2] = comision.getArea().getNombre();
-			modelo.addRow(row);
-		}
 	}
 	
 	private Comision buscarComision(String codigo) {

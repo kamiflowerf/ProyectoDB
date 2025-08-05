@@ -5,6 +5,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import DAO.AreaDAO;
+import DAO.JuradoDAO;
+import DAO.ParticipanteDAO;
 import logico.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -220,10 +222,20 @@ public class ModPersona extends JDialog {
                     miPersona.setNombre(txtNombre.getText());
                     miPersona.setApellidos(txtApellido.getText());
                     miPersona.setTelefono(txtTelefono.getText());
-
-                    JOptionPane.showMessageDialog(null, "Persona modificada exitosamente.", 
-                        "Modificación", JOptionPane.INFORMATION_MESSAGE);
-                    dispose();
+                    try {
+                        if(miPersona instanceof Jurado){
+                            JuradoDAO juradoDAO = new JuradoDAO();
+                            juradoDAO.update((Jurado)miPersona);
+                        } else if (miPersona instanceof Participante){
+                            ParticipanteDAO participanteDAO = new ParticipanteDAO();
+                            participanteDAO.update((Participante) miPersona);
+                        }
+                        JOptionPane.showMessageDialog(null, "Persona modificada exitosamente.",
+                            "Modificación", JOptionPane.INFORMATION_MESSAGE);
+                        dispose();
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             }
         });
