@@ -346,18 +346,41 @@ public class ModEvento extends JDialog {
 			btnAddRecurso.setFont(new Font("Tahoma", Font.BOLD, 12));
 			btnAddRecurso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(!(tieneLocal) && (selectedRecurso.getLocal() != null)) {
-						selectedRecurso.setSelected(true);
-						tieneLocal = true;
-					}else if(tieneLocal && (selectedRecurso.getLocal() != null)) {
-						JOptionPane.showMessageDialog(null, 
-				                "Solo se puede seleccionar un local.",
-				                "Error", JOptionPane.ERROR_MESSAGE);
-					}else {
-						selectedRecurso.setSelected(true);
+					int selectedRow = tableRecurso.getSelectedRow();
+
+					if (selectedRow >= 0) {
+						String tipo = (String) modeloRecurso.getValueAt(selectedRow, 2);
+						String idRecurso = (String) modeloRecurso.getValueAt(selectedRow, 0);
+
+						if (tipo.equalsIgnoreCase("Local") && tieneLocal) {
+							JOptionPane.showMessageDialog(null,
+									"Solo se puede seleccionar un local.",
+									"Error", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+
+						try {
+							// IMPORTANTE: Marcar el recurso como seleccionado
+							Recurso recurso = GestionEvento.getInstance().buscarRecursoID(idRecurso);
+							if (recurso != null) {
+								recurso.setSelected(true);
+							}
+
+							Object[] rowData = new Object[modeloRecurso.getColumnCount()];
+							for (int i = 0; i < rowData.length; i++) {
+								rowData[i] = modeloRecurso.getValueAt(selectedRow, i);
+							}
+							modeloRecursoSelected.addRow(rowData);
+							modeloRecurso.removeRow(selectedRow);
+
+							if (tipo.equalsIgnoreCase("Local")) {
+								tieneLocal = true;
+							}
+
+						} catch (SQLException ex) {
+							ex.printStackTrace();
+						}
 					}
-					loadRecursos();
-					loadRecursosSelect();
 					btnAddRecurso.setEnabled(false);
 					btnQuitRecurso.setEnabled(false);
 				}

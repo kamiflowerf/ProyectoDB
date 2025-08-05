@@ -218,6 +218,9 @@ public class PlanificarEvento extends JDialog {
 										"Esta comisión tiene jurados en común con otra ya seleccionada.",
 										"Error", JOptionPane.ERROR_MESSAGE);
 							} else {
+								// IMPORTANTE: Marcar la comisión como seleccionada
+								selectedComision.setSelected(true);
+
 								// Agregar a la tabla de comisiones seleccionadas
 								Object[] rowData = new Object[modeloComision.getColumnCount()];
 								for (int i = 0; i < rowData.length; i++) {
@@ -250,15 +253,28 @@ public class PlanificarEvento extends JDialog {
 					int selectedRow = tableComisionS.getSelectedRow();
 
 					if (selectedRow >= 0) {
-						// Obtener los datos de la fila seleccionada
-						Object[] rowData = new Object[modeloComisionSelected.getColumnCount()];
-						for (int i = 0; i < rowData.length; i++) {
-							rowData[i] = modeloComisionSelected.getValueAt(selectedRow, i);
-						}
+						String idComision = (String) modeloComisionSelected.getValueAt(selectedRow, 0);
 
-						// Mover la fila de tabla seleccionada a tabla disponible
-						modeloComision.addRow(rowData);
-						modeloComisionSelected.removeRow(selectedRow);
+						try {
+							// IMPORTANTE: Desmarcar la comisión como no seleccionada
+							Comision comision = GestionEvento.getInstance().buscarComisionID(idComision);
+							if (comision != null) {
+								comision.setSelected(false);
+							}
+
+							// Obtener los datos de la fila seleccionada
+							Object[] rowData = new Object[modeloComisionSelected.getColumnCount()];
+							for (int i = 0; i < rowData.length; i++) {
+								rowData[i] = modeloComisionSelected.getValueAt(selectedRow, i);
+							}
+
+							// Mover la fila de tabla seleccionada a tabla disponible
+							modeloComision.addRow(rowData);
+							modeloComisionSelected.removeRow(selectedRow);
+
+						} catch (SQLException ex) {
+							ex.printStackTrace();
+						}
 					}
 					btnAddComision.setEnabled(false);
 					btnQuitComision.setEnabled(false);
@@ -347,23 +363,42 @@ public class PlanificarEvento extends JDialog {
 					int selectedRow = tableRecurso.getSelectedRow();
 
 					if (selectedRow >= 0) {
-						String tipo = (String) modeloRecurso.getValueAt(selectedRow, 2);
+						String idRecurso = (String) modeloRecurso.getValueAt(selectedRow, 0);
 
-						if (tipo.equalsIgnoreCase("Local") && tieneLocal) {
+						try {
+							// Obtener el recurso completo por su ID
+							Recurso recurso = GestionEvento.getInstance().buscarRecursoID(idRecurso);
+
+							if (recurso != null) {
+								// Verificar si el recurso tiene un local y ya hay uno seleccionado
+								if (recurso.getLocal() != null && tieneLocal) {
+									JOptionPane.showMessageDialog(null,
+											"Solo se puede seleccionar un local.",
+											"Error", JOptionPane.ERROR_MESSAGE);
+									return;
+								}
+
+								// Marcar el recurso como seleccionado
+								recurso.setSelected(true);
+
+								// Si tiene local, marcar que ya hay uno seleccionado
+								if (recurso.getLocal() != null) {
+									tieneLocal = true;
+								}
+							}
+
+							Object[] rowData = new Object[modeloRecurso.getColumnCount()];
+							for (int i = 0; i < rowData.length; i++) {
+								rowData[i] = modeloRecurso.getValueAt(selectedRow, i);
+							}
+							modeloRecursoSelected.addRow(rowData);
+							modeloRecurso.removeRow(selectedRow);
+
+						} catch (SQLException ex) {
+							ex.printStackTrace();
 							JOptionPane.showMessageDialog(null,
-									"Solo se puede seleccionar un local.",
+									"Error al procesar el recurso: " + ex.getMessage(),
 									"Error", JOptionPane.ERROR_MESSAGE);
-							return;
-						}
-
-						Object[] rowData = new Object[modeloRecurso.getColumnCount()];
-						for (int i = 0; i < rowData.length; i++) {
-							rowData[i] = modeloRecurso.getValueAt(selectedRow, i);
-						}
-						modeloRecursoSelected.addRow(rowData);
-						modeloRecurso.removeRow(selectedRow);
-						if (tipo.equalsIgnoreCase("Local")) {
-							tieneLocal = true;
 						}
 					}
 					btnAddRecurso.setEnabled(false);
@@ -381,18 +416,37 @@ public class PlanificarEvento extends JDialog {
 					int selectedRow = tableRecursoS.getSelectedRow();
 
 					if (selectedRow >= 0) {
-						String tipo = (String) modeloRecursoSelected.getValueAt(selectedRow, 2);
+						String idRecurso = (String) modeloRecursoSelected.getValueAt(selectedRow, 0);
 
-						Object[] rowData = new Object[modeloRecursoSelected.getColumnCount()];
-						for (int i = 0; i < rowData.length; i++) {
-							rowData[i] = modeloRecursoSelected.getValueAt(selectedRow, i);
-						}
+						try {
+							// Obtener el recurso completo por su ID
+							Recurso recurso = GestionEvento.getInstance().buscarRecursoID(idRecurso);
 
-						modeloRecurso.addRow(rowData);
-						modeloRecursoSelected.removeRow(selectedRow);
+							if (recurso != null) {
+								// Desmarcar el recurso como no seleccionado
+								recurso.setSelected(false);
 
-						if (tipo.equalsIgnoreCase("Local")) {
-							tieneLocal = false;
+								// Verificar si el recurso tiene un local (no es null)
+								if (recurso.getLocal() != null) {
+									tieneLocal = false;
+								}
+							}
+
+							// Obtener los datos de la fila seleccionada
+							Object[] rowData = new Object[modeloRecursoSelected.getColumnCount()];
+							for (int i = 0; i < rowData.length; i++) {
+								rowData[i] = modeloRecursoSelected.getValueAt(selectedRow, i);
+							}
+
+							// Mover la fila de tabla seleccionada a tabla disponible
+							modeloRecurso.addRow(rowData);
+							modeloRecursoSelected.removeRow(selectedRow);
+
+						} catch (SQLException ex) {
+							ex.printStackTrace();
+							JOptionPane.showMessageDialog(null,
+									"Error al procesar el recurso: " + ex.getMessage(),
+									"Error", JOptionPane.ERROR_MESSAGE);
 						}
 					}
 
@@ -451,61 +505,61 @@ public class PlanificarEvento extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						if(txtTitulo.getText().isEmpty() || cmbTipo.getSelectedIndex() == 0) {
-							JOptionPane.showMessageDialog(null, 
-					                "Debe llenar todos los datos generales.",
-					                "Error", JOptionPane.ERROR_MESSAGE);
-						}else {
-							Date fecha = (Date) spnFecha.getValue();
-							int cantRecurSel = 0;
-							int cantComiSel = 0;
-                            try {
-                                for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-                                    if(obj.getSelected()) {
-                                        cantRecurSel++;
-                                    }
-                                }
+							JOptionPane.showMessageDialog(null,
+									"Debe llenar todos los datos generales.",
+									"Error", JOptionPane.ERROR_MESSAGE);
+						} else {
+							// NUEVA VALIDACIÓN: Verificar directamente las tablas de seleccionados
+							int cantRecurSel = modeloRecursoSelected.getRowCount();
+							int cantComiSel = modeloComisionSelected.getRowCount();
 
-								for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-									if(obj.getSelected()) {
-										cantComiSel++;
-									}
-								}
-                            } catch (SQLException ex) {
-                                throw new RuntimeException(ex);
-                            }
-
-                            if(cantRecurSel == 0 || cantComiSel == 0) {
-								JOptionPane.showMessageDialog(null, 
+							if(cantRecurSel == 0 || cantComiSel == 0) {
+								JOptionPane.showMessageDialog(null,
 										"Debe seleccionar al menos una comisión y un recurso.",
 										"Error", JOptionPane.ERROR_MESSAGE);
-							}else {
+							} else {
 								if(tieneLocal) {
-									Evento evento = new Evento(txtCodigo.getText(), txtTitulo.getText(), (TipoEvento) cmbTipo.getSelectedItem(), fecha);
-                                    try {
-                                        for (Recurso obj : GestionEvento.getInstance().getMisRecursos()) {
-                                            if(obj.getSelected()) {
-                                                evento.getRecursos().add(obj);
-                                                obj.setSelected(false);
-                                            }
-                                        }
-										for (Comision obj : GestionEvento.getInstance().getMisComisiones()) {
-											if(obj.getSelected()) {
-												evento.getComisiones().add(obj);
-												obj.setSelected(false);
+									Date fecha = (Date) spnFecha.getValue();
+									Evento evento = new Evento(txtCodigo.getText(), txtTitulo.getText(),
+											(TipoEvento) cmbTipo.getSelectedItem(), fecha);
+
+									try {
+										// Agregar recursos seleccionados
+										for (int i = 0; i < modeloRecursoSelected.getRowCount(); i++) {
+											String idRecurso = (String) modeloRecursoSelected.getValueAt(i, 0);
+											Recurso recurso = GestionEvento.getInstance().buscarRecursoID(idRecurso);
+											if (recurso != null) {
+												evento.getRecursos().add(recurso);
+												recurso.setSelected(false); // Resetear después de agregar
 											}
 										}
+
+										// Agregar comisiones seleccionadas
+										for (int i = 0; i < modeloComisionSelected.getRowCount(); i++) {
+											String idComision = (String) modeloComisionSelected.getValueAt(i, 0);
+											Comision comision = GestionEvento.getInstance().buscarComisionID(idComision);
+											if (comision != null) {
+												evento.getComisiones().add(comision);
+												comision.setSelected(false); // Resetear después de agregar
+											}
+										}
+
 										GestionEvento.getInstance().insertarEvento(evento);
 										JOptionPane.showMessageDialog(null,
 												"Planificación exitosa.",
-												"Aviso", JOptionPane.WARNING_MESSAGE);
+												"Aviso", JOptionPane.INFORMATION_MESSAGE);
 										clean();
-                                    } catch (SQLException ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-								}else {
-									JOptionPane.showMessageDialog(null, 
-							                "Su evento debe tener un local.",
-							                "Error", JOptionPane.ERROR_MESSAGE);
+
+									} catch (SQLException ex) {
+										ex.printStackTrace();
+										JOptionPane.showMessageDialog(null,
+												"Error al crear el evento: " + ex.getMessage(),
+												"Error", JOptionPane.ERROR_MESSAGE);
+									}
+								} else {
+									JOptionPane.showMessageDialog(null,
+											"Su evento debe tener un local.",
+											"Error", JOptionPane.ERROR_MESSAGE);
 								}
 							}
 						}

@@ -113,7 +113,7 @@ public class EventoDAO implements DAO<Evento>{
             ps.setString(1, evento.getId());
             ps.setString(2, evento.getTitulo());
             ps.setString(3, evento.getTipo().getIdTipEven());
-            ps.setDate(4, (Date) evento.getFecha());
+            ps.setDate(4, new java.sql.Date(evento.getFecha().getTime()));
             int filas = ps.executeUpdate();
             if(filas == 0) {
                 con.rollback();
@@ -176,7 +176,7 @@ public class EventoDAO implements DAO<Evento>{
             ps = con.prepareStatement(sql);
             ps.setString(1, evento.getTitulo());
             ps.setBoolean(2, evento.getEstado());
-            ps.setDate(3, (Date) evento.getFecha());
+            ps.setDate(3, new java.sql.Date(evento.getFecha().getTime()));
             ps.setString(4, evento.getId());
             int filas = ps.executeUpdate();
             ConexionDB.closePreparedStatement(ps);

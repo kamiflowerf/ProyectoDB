@@ -51,7 +51,7 @@ public class GestionEvento implements Serializable {
 		misEventos = new ArrayList<>(eventoDAO.getAll());
 
 		if (usuarioDAO.getAll().isEmpty()) {
-			User admin = new User("admin", "Admin", "General", Seguridad.sha256("admin123"), "Administrador");
+			User admin = new User("Admin", "General", "admin", Seguridad.sha256("admin123"), "Administrador");
 			usuarioDAO.insert(admin);
 		}
 	}
